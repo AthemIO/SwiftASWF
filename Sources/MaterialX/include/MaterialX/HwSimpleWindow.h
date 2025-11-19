@@ -1,0 +1,1 @@
+../MaterialX/MXRenderHwSimpleWindow.h

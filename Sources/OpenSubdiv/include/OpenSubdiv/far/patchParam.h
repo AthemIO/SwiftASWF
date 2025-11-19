@@ -1,0 +1,1 @@
+../../OpenSubdiv/OSDAdaptivePatchParam.h

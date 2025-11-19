@@ -1,0 +1,1 @@
+../MaterialX/MXGenShaderSwizzleNode.h

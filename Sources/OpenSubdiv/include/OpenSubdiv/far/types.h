@@ -1,0 +1,1 @@
+../../OpenSubdiv/OSDAdaptiveTypes.h

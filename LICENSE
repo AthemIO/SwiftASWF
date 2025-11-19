@@ -1,0 +1,143 @@
+# Eigen
+Eigen is licensed under the BSD 3-Clause License. You can find the full license text here:
+https://github.com/libigl/eigen/blob/master/COPYING.BSD
+
+
+# Draco
+Draco is licensed under the Apache License 2.0. The full license can be found here:
+https://github.com/google/draco/blob/master/LICENSE
+
+
+# TBB (Threading Building Blocks)
+TBB is licensed under the Apache License 2.0. Full license details are available here:
+https://github.com/oneapi-src/oneTBB/blob/master/LICENSE.txt
+
+
+# ZStandard
+ZStandard is licensed under the BSD 3-Clause License. The complete license text is available here:
+https://github.com/facebook/zstd/blob/dev/LICENSE
+
+
+# ZLib
+ZLib is licensed under the Zlib License. You can view the license text here:
+https://www.zlib.net/zlib_license.html
+
+
+# Yaml
+Yaml is licensed under the MIT License. The full license can be found here:
+https://github.com/yaml/libyaml/blob/master/License
+
+
+# WebP
+WebP is licensed under the BSD 3-Clause License. The complete license text is available here:
+https://github.com/webmproject/libwebp/blob/main/COPYING
+
+
+# LZMA2
+LZMA2 is in the public domain. You can find more information here:
+https://github.com/conor42/fast-lzma2/blob/master/LICENSE
+
+
+# MiniZip
+MiniZip is licensed under the zlib License. The full license text is available here:
+https://github.com/zlib-ng/minizip-ng/blob/develop/LICENSE
+
+
+# Blosc
+Blosc is licensed under the BSD 3-Clause License. You can view the license here:
+https://github.com/Blosc/c-blosc/blob/main/LICENSE.txt
+
+
+# OpenVDB
+OpenVDB is licensed under the Apache License 2.0. The full license can be found here:
+https://github.com/AcademySoftwareFoundation/openvdb/blob/master/LICENSE
+
+
+# OpenColorIO
+OpenColorIO is licensed under the BSD 3-Clause License. Full license text can be found here:
+https://github.com/AcademySoftwareFoundation/OpenColorIO/blob/main/LICENSE
+
+
+# OpenImageIO
+OpenImageIO is licensed under the BSD 3-Clause License. You can find the full license here:
+https://github.com/AcademySoftwareFoundation/OpenImageIO/blob/main/LICENSE.md
+
+
+# MaterialX
+MaterialX is licensed under the Apache License 2.0. The complete license text is available here:
+https://github.com/materialx/MaterialX/blob/main/LICENSE
+
+
+# LibPNG
+LibPNG is licensed under the LibPNG License. You can view the full license text here:
+http://www.libpng.org/pub/png/src/libpng-LICENSE.txt
+
+
+# Boost
+Boost is licensed under the Boost Software License, Version 1.0. The complete license text is available here:
+https://github.com/boostorg/boost/blob/master/LICENSE_1_0.txt
+
+
+# Python
+Python is licensed under the Python Software Foundation License. The full license can be found here:
+https://docs.python.org/3/license.html
+
+
+# OpenSubdiv
+OpenSubdiv is licensed under the Apache License 2.0. You can find the complete license text here:
+https://github.com/PixarAnimationStudios/OpenSubdiv/blob/release/LICENSE.txt
+
+
+# OSL (Open Shading Language)
+OSL is licensed under the BSD 3-Clause License. The full license can be found here:
+https://github.com/AcademySoftwareFoundation/OpenShadingLanguage/blob/main/LICENSE.md
+
+
+# Ptex
+Ptex is licensed under the Apache License 2.0. The complete license text is available here:
+https://github.com/wdas/ptex/blob/main/LICENSE
+
+
+# ImGUI
+ImGUI is licensed under the MIT License. The full license text is available here:
+https://github.com/ocornut/imgui/blob/master/LICENSE.txt
+
+
+# Embree
+Embree is licensed under the Apache License 2.0. You can view the full license text here:
+https://github.com/RenderKit/embree/blob/master/LICENSE.txt
+
+
+# Alembic
+Alembic is licensed under the BSD 3-Clause License. The full license can be found here:
+https://github.com/alembic/alembic/blob/master/LICENSE.txt
+
+
+# OpenEXR
+OpenEXR is licensed under the BSD 3-Clause License. The complete license text is available here:
+https://github.com/AcademySoftwareFoundation/openexr/blob/main/LICENSE.md
+
+
+# Imath
+Imath is licensed under the BSD 3-Clause License. You can find the full license text here:
+https://github.com/AcademySoftwareFoundation/Imath/blob/main/LICENSE.md
+
+
+# HDF5
+HDF5 is licensed under the HDF Group's HDF5 License. The full license can be found here:
+https://raw.githubusercontent.com/HDFGroup/hdf5/develop/COPYING
+
+
+# TurboJPEG
+TurboJPEG is licensed under the MIT License. You can view the full license text here:
+https://github.com/libjpeg-turbo/libjpeg-turbo/blob/master/LICENSE.md
+
+
+# TIFF
+TIFF is licensed under the Apache License 2.0. The complete license text can be found here:
+https://github.com/libsdl-org/libtiff/blob/master/LICENSE.md
+
+
+# libRAW
+libRAW is licensed under the COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0. You can view the full license here:
+https://github.com/LibRaw/LibRaw/blob/master/LICENSE.CDDL

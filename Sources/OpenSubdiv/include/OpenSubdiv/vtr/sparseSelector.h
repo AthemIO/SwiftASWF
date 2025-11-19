@@ -1,0 +1,1 @@
+../../OpenSubdiv/OSDVectorSparseSelector.h

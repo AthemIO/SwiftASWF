@@ -1,0 +1,1 @@
+../MaterialX/MXRenderStbImageLoader.h
