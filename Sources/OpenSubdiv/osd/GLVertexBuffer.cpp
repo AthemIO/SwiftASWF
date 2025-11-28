@@ -32,70 +32,93 @@ namespace OPENSUBDIV_VERSION {
 namespace Osd {
 
 GLVertexBuffer::GLVertexBuffer(int numElements, int numVertices)
-    : _numElements(numElements), _numVertices(numVertices), _vbo(0) {
+    : _numElements(numElements),
+      _numVertices(numVertices),
+      _vbo(0) {
 
-  // Initialize internal OpenGL loader library if necessary
-  OpenSubdiv::internal::GLLoader::libraryInitializeGL();
+    // Initialize internal OpenGL loader library if necessary
+    OpenSubdiv::internal::GLLoader::libraryInitializeGL();
 }
 
-GLVertexBuffer::~GLVertexBuffer() { OpenSubdiv::internal::GLApi::glDeleteBuffers(1, &_vbo); }
+GLVertexBuffer::~GLVertexBuffer() {
 
-GLVertexBuffer *GLVertexBuffer::Create(int numElements, int numVertices,
-                                       void *) {
-
-  GLVertexBuffer *instance = new GLVertexBuffer(numElements, numVertices);
-  if (instance->allocate())
-    return instance;
-  delete instance;
-  return 0;
+    glDeleteBuffers(1, &_vbo);
 }
 
-void GLVertexBuffer::UpdateData(const float *src, int startVertex,
-                                int numVertices, void * /*deviceContext*/) {
+GLVertexBuffer *
+GLVertexBuffer::Create(int numElements, int numVertices, void *) {
 
-  int size = numVertices * _numElements * (int)sizeof(float);
+    GLVertexBuffer *instance =
+        new GLVertexBuffer(numElements, numVertices);
+    if (instance->allocate()) return instance;
+    delete instance;
+    return 0;
+}
+
+void
+GLVertexBuffer::UpdateData(const float *src, int startVertex, int numVertices,
+                           void * /*deviceContext*/) {
+
+    int size = numVertices * _numElements * (int) sizeof(float);
 #if defined(GL_ARB_direct_state_access)
-  if (OSD_OPENGL_HAS(ARB_direct_state_access)) {
-    glNamedBufferSubData(_vbo, startVertex * _numElements * sizeof(float), size,
-                         src);
-  } else
+    if (OSD_OPENGL_HAS(ARB_direct_state_access)) {
+        glNamedBufferSubData(_vbo,
+                             startVertex * _numElements * sizeof(float),
+size, src);
+    } else
 #endif
-  {
-    OpenSubdiv::internal::GLApi::glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-    OpenSubdiv::internal::GLApi::glBufferSubData(GL_ARRAY_BUFFER, startVertex * _numElements * sizeof(float), size, src);
-    OpenSubdiv::internal::GLApi::glBindBuffer(GL_ARRAY_BUFFER, 0);
-  }
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+        glBufferSubData(GL_ARRAY_BUFFER,
+                        startVertex * _numElements * sizeof(float), size, src);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
 }
 
-int GLVertexBuffer::GetNumElements() const { return _numElements; }
+int
+GLVertexBuffer::GetNumElements() const {
 
-int GLVertexBuffer::GetNumVertices() const { return _numVertices; }
+    return _numElements;
+}
 
-GLuint GLVertexBuffer::BindVBO(void * /*deviceContext*/) { return _vbo; }
+int
+GLVertexBuffer::GetNumVertices() const {
 
-bool GLVertexBuffer::allocate() {
+    return _numVertices;
+}
 
-  int size = _numElements * _numVertices * (int)sizeof(float);
+GLuint
+GLVertexBuffer::BindVBO(void * /*deviceContext*/) {
+
+    return _vbo;
+}
+
+bool
+GLVertexBuffer::allocate() {
+
+    int size = _numElements * _numVertices * (int) sizeof(float);
+
 
 #if defined(GL_ARB_direct_state_access)
-  if (OSD_OPENGL_HAS(ARB_direct_state_access)) {
-    glCreateBuffers(1, &_vbo);
-    glNamedBufferDataEXT(_vbo, size, 0, GL_DYNAMIC_DRAW);
-  } else
+    if (OSD_OPENGL_HAS(ARB_direct_state_access)) {
+        glCreateBuffers(1, &_vbo);
+        glNamedBufferDataEXT(_vbo, size, 0, GL_DYNAMIC_DRAW);
+    } else
 #endif
-  {
-    GLint prev = 0;
-    OpenSubdiv::internal::GLApi::glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &prev);
-    OpenSubdiv::internal::GLApi::glGenBuffers(1, &_vbo);
-    OpenSubdiv::internal::GLApi::glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-    OpenSubdiv::internal::GLApi::glBufferData(GL_ARRAY_BUFFER, size, 0, GL_DYNAMIC_DRAW);
-    OpenSubdiv::internal::GLApi::glBindBuffer(GL_ARRAY_BUFFER, prev);
-  }
+    {
+        GLint prev = 0;
+        glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &prev);
+        glGenBuffers(1, &_vbo);
+        glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+        glBufferData(GL_ARRAY_BUFFER, size, 0, GL_DYNAMIC_DRAW);
+        glBindBuffer(GL_ARRAY_BUFFER, prev);
+    }
 
-  return true;
+    return true;
 }
 
-} // end namespace Osd
+}  // end namespace Osd
 
 } // end namespace OPENSUBDIV_VERSION
 } // end namespace OpenSubdiv
+

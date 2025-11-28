@@ -8,25 +8,25 @@
 
 #include <MaterialX/MXGenMdlExport.h>
 
-#include <MaterialX/MXGenMdlSourceCodeNodeMdl.h>
+#include "SourceCodeNodeMdl.h"
 
 MATERIALX_NAMESPACE_BEGIN
 
 /// Image node implementation for MDL
-class MX_GENMDL_API ImageNodeMdl : public SourceCodeNodeMdl {
-  using BASE = SourceCodeNodeMdl;
+class MX_GENMDL_API ImageNodeMdl : public SourceCodeNodeMdl
+{
+    using BASE = SourceCodeNodeMdl;
 
-public:
-  static const string FLIP_V; ///< the empty string ""
+  public:
+    static const string FLIP_V; ///< name of the additional parameter "flip_v"
 
-  static ShaderNodeImplPtr create();
+    static ShaderNodeImplPtr create();
 
-  void addInputs(ShaderNode &node, GenContext &context) const override;
+    void addInputs(ShaderNode& node, GenContext& context) const override;
 
-  bool isEditable(const ShaderInput &input) const override;
+    bool isEditable(const ShaderInput& input) const override;
 
-  void emitFunctionCall(const ShaderNode &node, GenContext &context,
-                        ShaderStage &stage) const override;
+    void emitFunctionCall(const ShaderNode& node, GenContext& context, ShaderStage& stage) const override;
 };
 
 MATERIALX_NAMESPACE_END

@@ -8,17 +8,17 @@
 
 #include <MaterialX/MXGenMdlExport.h>
 
-#include <MaterialX/MXGenShaderMaterialNode.h>
+#include <MaterialX/MXGenShaderNodes/MaterialNode.h>
 
 MATERIALX_NAMESPACE_BEGIN
 
 /// Material node implementation for MDL
-class MX_GENMDL_API MaterialNodeMdl : public MaterialNode {
-public:
-  static ShaderNodeImplPtr create();
+class MX_GENMDL_API MaterialNodeMdl : public MaterialNode
+{
+  public:
+    static ShaderNodeImplPtr create();
 
-  void emitFunctionCall(const ShaderNode &node, GenContext &context,
-                        ShaderStage &stage) const override;
+    void emitFunctionCall(const ShaderNode& node, GenContext& context, ShaderStage& stage) const override;
 };
 
 MATERIALX_NAMESPACE_END

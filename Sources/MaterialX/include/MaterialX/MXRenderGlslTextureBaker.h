@@ -16,9 +16,9 @@
 
 #include <MaterialX/MXRenderGlslExport.h>
 
-#include <MaterialX/MXGenGlslShaderGenerator.h>
-#include <MaterialX/MXRenderGlslGLTextureHandler.h>
 #include <MaterialX/MXRenderGlslGlslRenderer.h>
+#include <MaterialX/MXRenderGlslGLTextureHandler.h>
+#include <MaterialX/MXGenGlslGlslShaderGenerator.h>
 
 MATERIALX_NAMESPACE_BEGIN
 
@@ -30,17 +30,15 @@ using BakedDocumentVec = std::vector<std::pair<std::string, DocumentPtr>>;
 
 /// @class TextureBakerGlsl
 /// An implementation of TextureBaker based on GLSL shader generation.
-class MX_RENDERGLSL_API TextureBakerGlsl
-    : public TextureBaker<GlslRenderer, GlslShaderGenerator> {
-public:
-  static TextureBakerPtr
-  create(unsigned int width = 1024, unsigned int height = 1024,
-         Image::BaseType baseType = Image::BaseType::UINT8) {
-    return TextureBakerPtr(new TextureBakerGlsl(width, height, baseType));
-  }
+class MX_RENDERGLSL_API TextureBakerGlsl : public TextureBaker<GlslRenderer, GlslShaderGenerator>
+{
+  public:
+    static TextureBakerPtr create(unsigned int width = 1024, unsigned int height = 1024, Image::BaseType baseType = Image::BaseType::UINT8)
+    {
+        return TextureBakerPtr(new TextureBakerGlsl(width, height, baseType));
+    }
 
-  TextureBakerGlsl(unsigned int width, unsigned int height,
-                   Image::BaseType baseType);
+    TextureBakerGlsl(unsigned int width, unsigned int height, Image::BaseType baseType);
 };
 
 MATERIALX_NAMESPACE_END

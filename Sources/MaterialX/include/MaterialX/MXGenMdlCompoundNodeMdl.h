@@ -8,46 +8,44 @@
 
 #include <MaterialX/MXGenMdlExport.h>
 
-#include <MaterialX/MXGenShaderCompoundNode.h>
+#include <MaterialX/MXGenShaderNodes/CompoundNode.h>
 
 MATERIALX_NAMESPACE_BEGIN
 
 /// Generator context data class to pass strings.
-class GenUserDataString : public GenUserData {
-public:
-  GenUserDataString(const std::string &value) : _value(value) {}
-  const string &getValue() const { return _value; }
+class GenUserDataString : public GenUserData
+{
+  public:
+    GenUserDataString(const std::string& value) : _value(value) {}
+    const string& getValue() const { return _value; }
 
-private:
-  string _value;
+  private:
+    string _value;
 };
 
 /// Shared pointer to a GenUserDataString
 using GenUserDataStringPtr = std::shared_ptr<GenUserDataString>;
 
 /// Compound node implementation
-class MX_GENMDL_API CompoundNodeMdl : public CompoundNode {
-public:
-  static ShaderNodeImplPtr create();
+class MX_GENMDL_API CompoundNodeMdl : public CompoundNode
+{
+  public:
+    static ShaderNodeImplPtr create();
 
-  void initialize(const InterfaceElement &element,
-                  GenContext &context) override;
-  void emitFunctionDefinition(const ShaderNode &node, GenContext &context,
-                              ShaderStage &stage) const override;
-  void emitFunctionCall(const ShaderNode &node, GenContext &context,
-                        ShaderStage &stage) const override;
+    void initialize(const InterfaceElement& element, GenContext& context) override;
+    void emitFunctionDefinition(const ShaderNode& node, GenContext& context, ShaderStage& stage) const override;
+    void emitFunctionCall(const ShaderNode& node, GenContext& context, ShaderStage& stage) const override;
 
-  bool isReturnStruct() const { return !_returnStruct.empty(); }
-  bool unrollReturnStructMembers() const { return _unrollReturnStructMembers; }
+    bool isReturnStruct() const { return !_returnStruct.empty(); }
+    bool unrollReturnStructMembers() const { return _unrollReturnStructMembers; }
 
-protected:
-  void emitFunctionSignature(const ShaderNode &node, GenContext &context,
-                             ShaderStage &stage) const;
+  protected:
+    void emitFunctionSignature(const ShaderNode& node, GenContext& context, ShaderStage& stage) const;
 
-  string _returnStruct;
-  bool _unrollReturnStructMembers = false;
+    string _returnStruct;
+    bool _unrollReturnStructMembers = false;
 
-  static const string GEN_USER_DATA_RETURN_STRUCT_FIELD_NAME;
+    static const string GEN_USER_DATA_RETURN_STRUCT_FIELD_NAME;
 };
 
 MATERIALX_NAMESPACE_END

@@ -32,33 +32,53 @@ namespace OPENSUBDIV_VERSION {
 namespace Osd {
 
 CpuVertexBuffer::CpuVertexBuffer(int numElements, int numVertices)
-    : _numElements(numElements), _numVertices(numVertices), _cpuBuffer(NULL) {
+    : _numElements(numElements),
+      _numVertices(numVertices),
+      _cpuBuffer(NULL) {
 
-  _cpuBuffer = new float[numElements * numVertices];
+    _cpuBuffer = new float[numElements * numVertices];
 }
 
-CpuVertexBuffer::~CpuVertexBuffer() { delete[] _cpuBuffer; }
+CpuVertexBuffer::~CpuVertexBuffer() {
 
-CpuVertexBuffer *CpuVertexBuffer::Create(int numElements, int numVertices,
-                                         void * /*deviceContext*/) {
-
-  return new CpuVertexBuffer(numElements, numVertices);
+    delete[] _cpuBuffer;
 }
 
-void CpuVertexBuffer::UpdateData(const float *src, int startVertex,
-                                 int numVertices, void * /*deviceContext*/) {
+CpuVertexBuffer *
+CpuVertexBuffer::Create(int numElements, int numVertices,
+                        void * /*deviceContext*/) {
 
-  memcpy(_cpuBuffer + startVertex * _numElements, src,
-         GetNumElements() * numVertices * sizeof(float));
+    return new CpuVertexBuffer(numElements, numVertices);
 }
 
-int CpuVertexBuffer::GetNumElements() const { return _numElements; }
+void
+CpuVertexBuffer::UpdateData(const float *src, int startVertex, int numVertices,
+                            void * /*deviceContext*/) {
 
-int CpuVertexBuffer::GetNumVertices() const { return _numVertices; }
+    memcpy(_cpuBuffer + startVertex * _numElements,
+           src, GetNumElements() * numVertices * sizeof(float));
+}
 
-float *CpuVertexBuffer::BindCpuBuffer() { return _cpuBuffer; }
+int
+CpuVertexBuffer::GetNumElements() const {
 
-} // end namespace Osd
+    return _numElements;
+}
 
-} // end namespace OPENSUBDIV_VERSION
-} // end namespace OpenSubdiv
+int
+CpuVertexBuffer::GetNumVertices() const {
+
+    return _numVertices;
+}
+
+float*
+CpuVertexBuffer::BindCpuBuffer() {
+
+    return _cpuBuffer;
+}
+
+}  // end namespace Osd
+
+}  // end namespace OPENSUBDIV_VERSION
+}  // end namespace OpenSubdiv
+

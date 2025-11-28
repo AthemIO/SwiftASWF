@@ -8,19 +8,18 @@
 
 #include <MaterialX/MXGenOslExport.h>
 
-#include <MaterialX/MXGenShaderMaterialNode.h>
+#include <MaterialX/MXGenShaderNodes/MaterialNode.h>
 
 MATERIALX_NAMESPACE_BEGIN
 
 /// Material node implementation for OSL
-class MX_GENOSL_API MaterialNodeOsl : public MaterialNode {
-public:
-  static ShaderNodeImplPtr create();
+class MX_GENOSL_API MaterialNodeOsl : public MaterialNode
+{
+  public:
+    static ShaderNodeImplPtr create();
 
-  void emitFunctionDefinition(const ShaderNode &node, GenContext &context,
-                              ShaderStage &stage) const override;
-  void emitFunctionCall(const ShaderNode &node, GenContext &context,
-                        ShaderStage &stage) const override;
+    void emitFunctionDefinition(const ShaderNode& node, GenContext& context, ShaderStage& stage) const override;
+    void emitFunctionCall(const ShaderNode& node, GenContext& context, ShaderStage& stage) const override;
 };
 
 MATERIALX_NAMESPACE_END

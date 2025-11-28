@@ -8,26 +8,25 @@
 
 #include <MaterialX/MXGenMdlExport.h>
 
-#include <MaterialX/MXGenShaderSourceCodeNode.h>
+#include <MaterialX/MXGenShaderNodes/SourceCodeNode.h>
 
 MATERIALX_NAMESPACE_BEGIN
 
 /// Node implementation using data-driven static source code.
 /// This is the default implementation used for all nodes that
 /// do not have a custom ShaderNodeImpl class.
-class MX_GENMDL_API SourceCodeNodeMdl : public SourceCodeNode {
-public:
-  static ShaderNodeImplPtr create();
+class MX_GENMDL_API SourceCodeNodeMdl : public SourceCodeNode
+{
+  public:
+    static ShaderNodeImplPtr create();
 
-  void initialize(const InterfaceElement &element,
-                  GenContext &context) override;
-  void emitFunctionDefinition(const ShaderNode &, GenContext &,
-                              ShaderStage &) const override;
-  void emitFunctionCall(const ShaderNode &node, GenContext &context,
-                        ShaderStage &stage) const override;
+    void initialize(const InterfaceElement& element, GenContext& context) override;
+    void emitFunctionDefinition(const ShaderNode&, GenContext&, ShaderStage&) const override;
+    void emitFunctionCall(const ShaderNode& node, GenContext& context, ShaderStage& stage) const override;
 
-protected:
-  string _returnStruct;
+  protected:
+    void resolveSourceCode(const InterfaceElement& element, GenContext& context) override;
+    string _returnStruct;
 };
 
 MATERIALX_NAMESPACE_END

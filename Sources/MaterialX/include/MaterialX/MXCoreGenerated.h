@@ -7,22 +7,22 @@
 #define MATERIALX_GENERATED_H
 
 #define MATERIALX_MAJOR_VERSION 1
-#define MATERIALX_MINOR_VERSION 38
-#define MATERIALX_BUILD_VERSION 8
+#define MATERIALX_MINOR_VERSION 39
+#define MATERIALX_BUILD_VERSION 3
 
 /* #undef MATERIALX_BUILD_SHARED_LIBS */
 
 // Establish namespace:
-namespace MaterialX_v1_38_8
+namespace MaterialX_v1_39_3
 {
 }
 
 // Establish alias to allow downstream clients to still use the MaterialX namespace:
-namespace MaterialX = MaterialX_v1_38_8;
+namespace MaterialX = MaterialX_v1_39_3;
 
 // All code in this project must use these macros for opening and closing the
 // global MaterialX namespace:
-#define MATERIALX_NAMESPACE_BEGIN namespace MaterialX_v1_38_8 {
+#define MATERIALX_NAMESPACE_BEGIN namespace MaterialX_v1_39_3 {
 #define MATERIALX_NAMESPACE_END }
 
 #endif

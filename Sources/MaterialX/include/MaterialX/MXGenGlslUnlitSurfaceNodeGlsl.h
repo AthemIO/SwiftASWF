@@ -7,17 +7,17 @@
 #define MATERIALX_UNLITSURFACENODEGLSL_H
 
 #include <MaterialX/MXGenGlslExport.h>
-#include <MaterialX/MXGenGlslShaderGenerator.h>
+#include <MaterialX/MXGenGlslGlslShaderGenerator.h>
 
 MATERIALX_NAMESPACE_BEGIN
 
 /// Unlit surface node implementation for GLSL
-class MX_GENGLSL_API UnlitSurfaceNodeGlsl : public GlslImplementation {
-public:
-  static ShaderNodeImplPtr create();
+class MX_GENGLSL_API UnlitSurfaceNodeGlsl : public GlslImplementation
+{
+  public:
+    static ShaderNodeImplPtr create();
 
-  void emitFunctionCall(const ShaderNode &node, GenContext &context,
-                        ShaderStage &stage) const override;
+    void emitFunctionCall(const ShaderNode& node, GenContext& context, ShaderStage& stage) const override;
 };
 
 MATERIALX_NAMESPACE_END

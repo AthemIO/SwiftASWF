@@ -8,27 +8,24 @@
 
 #include <MaterialX/MXGenMdlExport.h>
 
-#include <MaterialX/MXGenShaderBlurNode.h>
+#include <MaterialX/MXGenShaderNodes/BlurNode.h>
 
 MATERIALX_NAMESPACE_BEGIN
 
 /// Blur node MDL implementation
-class MX_GENMDL_API BlurNodeMdl : public BlurNode {
-public:
-  static ShaderNodeImplPtr create();
+class MX_GENMDL_API BlurNodeMdl : public BlurNode
+{
+  public:
+    static ShaderNodeImplPtr create();
 
-  void emitFunctionCall(const ShaderNode &node, GenContext &context,
-                        ShaderStage &stage) const override;
+    void emitFunctionCall(const ShaderNode& node, GenContext& context, ShaderStage& stage) const override;
 
-protected:
-  void emitSamplingFunctionDefinition(const ShaderNode &node,
-                                      GenContext &context,
-                                      ShaderStage &stage) const override;
+  protected:
+    void emitSamplingFunctionDefinition(const ShaderNode& node, GenContext& context, ShaderStage& stage) const override;
 
-  /// Output sample array
-  void outputSampleArray(const ShaderGenerator &shadergen, ShaderStage &stage,
-                         const TypeDesc *inputType, const string &sampleName,
-                         const StringVec &sampleStrings) const override;
+    /// Output sample array
+    void outputSampleArray(const ShaderGenerator& shadergen, ShaderStage& stage, TypeDesc inputType,
+                           const string& sampleName, const StringVec& sampleStrings) const override;
 };
 
 MATERIALX_NAMESPACE_END

@@ -8,8 +8,8 @@
 
 #include <MaterialX/MXGenGlslExport.h>
 
-#include <MaterialX/MXGenShader.h>
-#include <MaterialX/MXGenShaderCompoundNode.h>
+#include <MaterialX/MXGenShaderNodes/CompoundNode.h>
+#include <MaterialX/MXGenShaderShader.h>
 #include <MaterialX/MXGenShaderGenContext.h>
 
 MATERIALX_NAMESPACE_BEGIN
@@ -17,31 +17,25 @@ MATERIALX_NAMESPACE_BEGIN
 class GlslShaderGenerator;
 
 /// LightCompound node implementation for GLSL
-class MX_GENGLSL_API LightCompoundNodeGlsl : public CompoundNode {
-public:
-  LightCompoundNodeGlsl();
+class MX_GENGLSL_API LightCompoundNodeGlsl : public CompoundNode
+{
+  public:
+    LightCompoundNodeGlsl();
 
-  static ShaderNodeImplPtr create();
+    static ShaderNodeImplPtr create();
 
-  const string &getTarget() const override;
+    const string& getTarget() const override;
 
-  void initialize(const InterfaceElement &element,
-                  GenContext &context) override;
+    void initialize(const InterfaceElement& element, GenContext& context) override;
 
-  void createVariables(const ShaderNode &node, GenContext &context,
-                       Shader &shader) const override;
+    void createVariables(const ShaderNode& node, GenContext& context, Shader& shader) const override;
 
-  void emitFunctionDefinition(const ShaderNode &node, GenContext &context,
-                              ShaderStage &stage) const override;
+    void emitFunctionDefinition(const ShaderNode& node, GenContext& context, ShaderStage& stage) const override;
 
-  void emitFunctionCall(const ShaderNode &node, GenContext &context,
-                        ShaderStage &stage) const override;
+    void emitFunctionCall(const ShaderNode& node, GenContext& context, ShaderStage& stage) const override;
 
-protected:
-  void emitFunctionDefinition(ClosureContext *cct, GenContext &context,
-                              ShaderStage &stage) const;
-
-  VariableBlock _lightUniforms;
+  protected:
+    VariableBlock _lightUniforms;
 };
 
 MATERIALX_NAMESPACE_END

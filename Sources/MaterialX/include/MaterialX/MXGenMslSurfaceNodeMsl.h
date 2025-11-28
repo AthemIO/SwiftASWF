@@ -7,32 +7,23 @@
 #define MATERIALX_SURFACENODEMSL_H
 
 #include <MaterialX/MXGenMslExport.h>
-#include <MaterialX/MXGenMslShaderGenerator.h>
+#include <MaterialX/MXGenMslMslShaderGenerator.h>
 
 MATERIALX_NAMESPACE_BEGIN
 
 /// Surface node implementation for MSL
-class MX_GENMSL_API SurfaceNodeMsl : public MslImplementation {
-public:
-  SurfaceNodeMsl();
+class MX_GENMSL_API SurfaceNodeMsl : public MslImplementation
+{
+  public:
+    SurfaceNodeMsl();
 
-  static ShaderNodeImplPtr create();
+    static ShaderNodeImplPtr create();
 
-  void createVariables(const ShaderNode &node, GenContext &context,
-                       Shader &shader) const override;
+    void createVariables(const ShaderNode& node, GenContext& context, Shader& shader) const override;
 
-  void emitFunctionCall(const ShaderNode &node, GenContext &context,
-                        ShaderStage &stage) const override;
+    void emitFunctionCall(const ShaderNode& node, GenContext& context, ShaderStage& stage) const override;
 
-  virtual void emitLightLoop(const ShaderNode &node, GenContext &context,
-                             ShaderStage &stage, const string &outColor) const;
-
-protected:
-  /// Closure contexts for calling closure functions.
-  mutable ClosureContext _callReflection;
-  mutable ClosureContext _callTransmission;
-  mutable ClosureContext _callIndirect;
-  mutable ClosureContext _callEmission;
+    virtual void emitLightLoop(const ShaderNode& node, GenContext& context, ShaderStage& stage, const string& outColor) const;
 };
 
 MATERIALX_NAMESPACE_END

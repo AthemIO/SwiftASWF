@@ -6,16 +6,16 @@
 #ifndef MATERIALX_CLOSURESOURCECODEMDL_H
 #define MATERIALX_CLOSURESOURCECODEMDL_H
 
-#include <MaterialX/MXGenMdlSourceCodeNodeMdl.h>
+#include <MaterialX/MXGenMdlNodes/SourceCodeNodeMdl.h>
 
 MATERIALX_NAMESPACE_BEGIN
 
-class MX_GENMDL_API ClosureSourceCodeNodeMdl : public SourceCodeNodeMdl {
-public:
-  static ShaderNodeImplPtr create();
+class MX_GENMDL_API ClosureSourceCodeNodeMdl : public SourceCodeNodeMdl
+{
+  public:
+    static ShaderNodeImplPtr create();
 
-  void emitFunctionCall(const ShaderNode &node, GenContext &context,
-                        ShaderStage &stage) const override;
+    void emitFunctionCall(const ShaderNode& node, GenContext& context, ShaderStage& stage) const override;
 };
 
 MATERIALX_NAMESPACE_END

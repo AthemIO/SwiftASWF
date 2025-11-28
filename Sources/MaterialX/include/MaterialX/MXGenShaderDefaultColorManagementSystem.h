@@ -14,31 +14,30 @@
 MATERIALX_NAMESPACE_BEGIN
 
 /// A shared pointer to a DefaultColorManagementSystem
-using DefaultColorManagementSystemPtr =
-    shared_ptr<class DefaultColorManagementSystem>;
+using DefaultColorManagementSystemPtr = shared_ptr<class DefaultColorManagementSystem>;
 
 /// @class DefaultColorManagementSystem
 /// Class for a default color management system.
-class MX_GENSHADER_API DefaultColorManagementSystem
-    : public ColorManagementSystem {
-public:
-  virtual ~DefaultColorManagementSystem() {}
+class MX_GENSHADER_API DefaultColorManagementSystem : public ColorManagementSystem
+{
+  public:
+    virtual ~DefaultColorManagementSystem() { }
 
-  /// Create a new DefaultColorManagementSystem
-  static DefaultColorManagementSystemPtr create(const string &target);
+    /// Create a new DefaultColorManagementSystem
+    static DefaultColorManagementSystemPtr create(const string& target);
 
-  /// Return the DefaultColorManagementSystem name
-  const string &getName() const override;
+    /// Return the DefaultColorManagementSystem name
+    const string& getName() const override;
 
-protected:
-  /// Returns a nodedef for a given transform
-  NodeDefPtr getNodeDef(const ColorSpaceTransform &transform) const override;
+  protected:
+    /// Returns a nodedef for a given transform
+    NodeDefPtr getNodeDef(const ColorSpaceTransform& transform) const override;
 
-  /// Protected constructor
-  DefaultColorManagementSystem(const string &target);
+    /// Protected constructor
+    DefaultColorManagementSystem(const string& target);
 
-private:
-  string _target;
+  private:
+    string _target;
 };
 
 MATERIALX_NAMESPACE_END

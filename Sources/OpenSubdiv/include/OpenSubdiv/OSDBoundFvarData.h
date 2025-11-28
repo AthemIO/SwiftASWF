@@ -160,7 +160,7 @@ using namespace OPENSUBDIV_VERSION;
 
 } // end namespace OpenSubdiv
 
-#include "../OpenSubdiv/OSDBoundFvarEdit.h"
+#include "OpenSubdiv/OSDBoundFvarEdit.h"
 
 namespace OpenSubdiv {
 namespace OPENSUBDIV_VERSION {

@@ -22,7 +22,7 @@
 //   language governing permissions and limitations under the Apache License.
 //
 
-#include "OpenSubdiv/OSDVersion.h"
+#include "./version.h"
 
 namespace OpenSubdiv {
 namespace OPENSUBDIV_VERSION {

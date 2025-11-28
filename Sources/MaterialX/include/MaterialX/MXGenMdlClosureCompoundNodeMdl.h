@@ -6,21 +6,20 @@
 #ifndef MATERIALX_CLOSURECOMPOUNDNODEMDL_H
 #define MATERIALX_CLOSURECOMPOUNDNODEMDL_H
 
-#include <MaterialX/MXGenMdlCompoundNodeMdl.h>
 #include <MaterialX/MXGenMdlExport.h>
+#include <MaterialX/MXGenMdlNodes/CompoundNodeMdl.h>
 
 MATERIALX_NAMESPACE_BEGIN
 
 /// Compound node implementation
-class MX_GENMDL_API ClosureCompoundNodeMdl : public CompoundNodeMdl {
-public:
-  static ShaderNodeImplPtr create();
+class MX_GENMDL_API ClosureCompoundNodeMdl : public CompoundNodeMdl
+{
+  public:
+    static ShaderNodeImplPtr create();
 
-  void addClassification(ShaderNode &node) const override;
-  void emitFunctionDefinition(const ShaderNode &node, GenContext &context,
-                              ShaderStage &stage) const override;
-  void emitFunctionCall(const ShaderNode &node, GenContext &context,
-                        ShaderStage &stage) const override;
+    void addClassification(ShaderNode& node) const override;
+    void emitFunctionDefinition(const ShaderNode& node, GenContext& context, ShaderStage& stage) const override;
+    void emitFunctionCall(const ShaderNode& node, GenContext& context, ShaderStage& stage) const override;
 };
 
 MATERIALX_NAMESPACE_END

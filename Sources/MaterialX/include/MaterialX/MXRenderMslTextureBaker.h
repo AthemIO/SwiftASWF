@@ -17,10 +17,10 @@
 
 #include <MaterialX/MXRenderMslExport.h>
 
+#include <MaterialX/MXRenderMslMslRenderer.h>
 #include <MaterialX/MXRenderMslMetalTextureHandler.h>
-#include <MaterialX/MXRenderMslRenderer.h>
 
-#include <MaterialX/MXGenMslShaderGenerator.h>
+#include <MaterialX/MXGenMslMslShaderGenerator.h>
 
 MATERIALX_NAMESPACE_BEGIN
 
@@ -34,18 +34,16 @@ using BakedDocumentVec = std::vector<std::pair<std::string, DocumentPtr>>;
 /// A helper class for baking procedural material content to textures.
 /// TODO: Add support for graphs containing geometric nodes such as position
 ///       and normal.
-class MX_RENDERMSL_API TextureBakerMsl
-    : public TextureBaker<MslRenderer, MslShaderGenerator> {
-public:
-  static TextureBakerPtr
-  create(unsigned int width = 1024, unsigned int height = 1024,
-         Image::BaseType baseType = Image::BaseType::UINT8) {
-    return TextureBakerPtr(new TextureBakerMsl(width, height, baseType));
-  }
+class MX_RENDERMSL_API TextureBakerMsl : public TextureBaker<MslRenderer, MslShaderGenerator>
+{
+  public:
+    static TextureBakerPtr create(unsigned int width = 1024, unsigned int height = 1024, Image::BaseType baseType = Image::BaseType::UINT8)
+    {
+        return TextureBakerPtr(new TextureBakerMsl(width, height, baseType));
+    }
 
-protected:
-  TextureBakerMsl(unsigned int width, unsigned int height,
-                  Image::BaseType baseType);
+  protected:
+    TextureBakerMsl(unsigned int width, unsigned int height, Image::BaseType baseType);
 };
 
 MATERIALX_NAMESPACE_END

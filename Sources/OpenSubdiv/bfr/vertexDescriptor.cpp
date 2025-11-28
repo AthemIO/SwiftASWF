@@ -22,13 +22,13 @@
 //   language governing permissions and limitations under the Apache License.
 //
 
-#include "OpenSubdiv/OSDBaseLimits.h"
 #include "OpenSubdiv/OSDBaseVertexDescriptor.h"
+#include "OpenSubdiv/OSDBaseLimits.h"
 #include "OpenSubdiv/OSDCoreCrease.h"
 
-#include <algorithm>
-#include <cstdio>
 #include <cstring>
+#include <cstdio>
+#include <algorithm>
 
 namespace OpenSubdiv {
 namespace OPENSUBDIV_VERSION {
@@ -39,78 +39,81 @@ namespace Bfr {
 //  Main initialize/finalize methods used by clients to delimit the
 //  assignment (most work is now handled by the containing class):
 //
-bool VertexDescriptor::Initialize(int numFaces) {
+bool
+VertexDescriptor::Initialize(int numFaces) {
 
-  //  Mark invalid if too many or too few incident faces specified:
-  _isValid = (numFaces > 0) && (numFaces <= Limits::MaxValence());
-  _numFaces = _isValid ? (short)numFaces : 0;
+    //  Mark invalid if too many or too few incident faces specified:
+    _isValid  = (numFaces > 0) && (numFaces <= Limits::MaxValence());
+    _numFaces = _isValid ? (short) numFaces : 0;
 
-  //  Initialize all other members regardless of the above:
-  _vertSharpness = 0.0f;
+    //  Initialize all other members regardless of the above:
+    _vertSharpness = 0.0f;
 
-  _isManifold = false;
-  _isBoundary = false;
+    _isManifold = false;
+    _isBoundary = false;
 
-  _hasFaceSizes = false;
-  _hasEdgeSharpness = false;
+    _hasFaceSizes     = false;
+    _hasEdgeSharpness = false;
 
-  _isInitialized = _isValid;
-  _isFinalized = false;
+    _isInitialized = _isValid;
+    _isFinalized   = false;
 
-  return _isInitialized;
+    return _isInitialized;
 }
 
-bool VertexDescriptor::Finalize() {
+bool
+VertexDescriptor::Finalize() {
 
-  //  Fail if already invalid:
-  if (!_isValid)
-    return false;
+    //  Fail if already invalid:
+    if (!_isValid) return false;
 
-  //  Test for valid face size assignments while converting the sizes
-  //  to offsets. Also detect if the faces are all the same size -- in
-  //  which case, ignore the explicit assignments:
-  if (_hasFaceSizes) {
-    int size0 = _faceSizeOffsets[0];
-    bool sameSizes = true;
+    //  Test for valid face size assignments while converting the sizes
+    //  to offsets. Also detect if the faces are all the same size -- in
+    //  which case, ignore the explicit assignments:
+    if (_hasFaceSizes) {
+        int  size0 = _faceSizeOffsets[0];
+        bool sameSizes = true;
 
-    int sum = 0;
-    for (int i = 0; i < _numFaces; ++i) {
-      int faceSize = _faceSizeOffsets[i];
-      if ((faceSize < 3) || (faceSize > Limits::MaxFaceSize())) {
-        _isValid = false;
-        return false;
-      }
-      sameSizes &= (faceSize == size0);
+        int sum = 0;
+        for (int i = 0; i < _numFaces; ++i) {
+            int faceSize = _faceSizeOffsets[i];
+            if ((faceSize < 3) || (faceSize > Limits::MaxFaceSize())) {
+                _isValid = false;
+                return false;
+            }
+            sameSizes &= (faceSize == size0);
 
-      _faceSizeOffsets[i] = sum;
-      sum += faceSize;
+            _faceSizeOffsets[i] = sum;
+            sum += faceSize;
+        }
+        _faceSizeOffsets[_numFaces] = sum;
+
+        //  No need to make use of explicit face sizes and offsets:
+        if (sameSizes) {
+            _hasFaceSizes = false;
+        }
     }
-    _faceSizeOffsets[_numFaces] = sum;
-
-    //  No need to make use of explicit face sizes and offsets:
-    if (sameSizes) {
-      _hasFaceSizes = false;
-    }
-  }
-  _isFinalized = true;
-  return true;
+    _isFinalized = true;
+    return true;
 }
 
 //
 //  Internal methods for resizing local buffers:
 //
-void VertexDescriptor::initFaceSizes() {
+void
+VertexDescriptor::initFaceSizes() {
 
-  _faceSizeOffsets.SetSize(_numFaces + 1);
-  std::fill(&_faceSizeOffsets[0], &_faceSizeOffsets[_numFaces + 1], 0);
-  _hasFaceSizes = true;
+    _faceSizeOffsets.SetSize(_numFaces + 1);
+    std::fill(&_faceSizeOffsets[0], &_faceSizeOffsets[_numFaces + 1], 0);
+    _hasFaceSizes = true;
 }
 
-void VertexDescriptor::initEdgeSharpness() {
+void
+VertexDescriptor::initEdgeSharpness() {
 
-  _faceEdgeSharpness.SetSize(_numFaces * 2);
-  std::fill(&_faceEdgeSharpness[0], &_faceEdgeSharpness[_numFaces * 2], 0.0f);
-  _hasEdgeSharpness = true;
+    _faceEdgeSharpness.SetSize(_numFaces * 2);
+    std::fill(&_faceEdgeSharpness[0], &_faceEdgeSharpness[_numFaces * 2], 0.0f);
+    _hasEdgeSharpness = true;
 }
 
 } // end namespace Bfr

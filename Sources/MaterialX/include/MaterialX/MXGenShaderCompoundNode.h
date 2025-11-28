@@ -6,34 +6,31 @@
 #ifndef MATERIALX_COMPOUNDNODE_H
 #define MATERIALX_COMPOUNDNODE_H
 
-#include <MaterialX/MXGenShader.h>
-#include <MaterialX/MXGenShaderGraph.h>
-#include <MaterialX/MXGenShaderNodeImpl.h>
+#include <MaterialX/MXGenShaderShaderNodeImpl.h>
+#include <MaterialX/MXGenShaderShaderGraph.h>
+#include <MaterialX/MXGenShaderShader.h>
 
 MATERIALX_NAMESPACE_BEGIN
 
 /// Compound node implementation
-class MX_GENSHADER_API CompoundNode : public ShaderNodeImpl {
-public:
-  static ShaderNodeImplPtr create();
+class MX_GENSHADER_API CompoundNode : public ShaderNodeImpl
+{
+  public:
+    static ShaderNodeImplPtr create();
 
-  void initialize(const InterfaceElement &element,
-                  GenContext &context) override;
+    void initialize(const InterfaceElement& element, GenContext& context) override;
 
-  void createVariables(const ShaderNode &node, GenContext &context,
-                       Shader &shader) const override;
+    void createVariables(const ShaderNode& node, GenContext& context, Shader& shader) const override;
 
-  void emitFunctionDefinition(const ShaderNode &node, GenContext &context,
-                              ShaderStage &stage) const override;
+    void emitFunctionDefinition(const ShaderNode& node, GenContext& context, ShaderStage& stage) const override;
 
-  void emitFunctionCall(const ShaderNode &node, GenContext &context,
-                        ShaderStage &stage) const override;
+    void emitFunctionCall(const ShaderNode& node, GenContext& context, ShaderStage& stage) const override;
 
-  ShaderGraph *getGraph() const override { return _rootGraph.get(); }
+    ShaderGraph* getGraph() const override { return _rootGraph.get(); }
 
-protected:
-  ShaderGraphPtr _rootGraph;
-  string _functionName;
+  protected:
+    ShaderGraphPtr _rootGraph;
+    string _functionName;
 };
 
 MATERIALX_NAMESPACE_END

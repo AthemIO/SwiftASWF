@@ -27,85 +27,119 @@ using MeshStreamList = vector<MeshStreamPtr>;
 
 /// @class MeshStream
 /// Class to represent a mesh data stream
-class MX_RENDER_API MeshStream {
-public:
-  static const string POSITION_ATTRIBUTE;
-  static const string NORMAL_ATTRIBUTE;
-  static const string TEXCOORD_ATTRIBUTE;
-  static const string TANGENT_ATTRIBUTE;
-  static const string BITANGENT_ATTRIBUTE;
-  static const string COLOR_ATTRIBUTE;
-  static const string GEOMETRY_PROPERTY_ATTRIBUTE;
+class MX_RENDER_API MeshStream
+{
+  public:
+    static const string POSITION_ATTRIBUTE;
+    static const string NORMAL_ATTRIBUTE;
+    static const string TEXCOORD_ATTRIBUTE;
+    static const string TANGENT_ATTRIBUTE;
+    static const string BITANGENT_ATTRIBUTE;
+    static const string COLOR_ATTRIBUTE;
+    static const string GEOMETRY_PROPERTY_ATTRIBUTE;
 
-  static const unsigned int STRIDE_2D = 2;
-  static const unsigned int STRIDE_3D = 3;
-  static const unsigned int STRIDE_4D = 4;
-  static const unsigned int DEFAULT_STRIDE = STRIDE_3D;
+    static const unsigned int STRIDE_2D = 2;
+    static const unsigned int STRIDE_3D = 3;
+    static const unsigned int STRIDE_4D = 4;
+    static const unsigned int DEFAULT_STRIDE = STRIDE_3D;
 
-public:
-  MeshStream(const string &name, const string &type, unsigned int index)
-      : _name(name), _type(type), _index(index), _stride(DEFAULT_STRIDE) {}
-  ~MeshStream() {}
+  public:
+    MeshStream(const string& name, const string& type, unsigned int index) :
+        _name(name),
+        _type(type),
+        _index(index),
+        _stride(DEFAULT_STRIDE)
+    {
+    }
+    ~MeshStream() { }
 
-  /// Create a new mesh stream
-  static MeshStreamPtr create(const string &name, const string &type,
-                              unsigned int index = 0) {
-    return std::make_shared<MeshStream>(name, type, index);
-  }
+    /// Create a new mesh stream
+    static MeshStreamPtr create(const string& name, const string& type, unsigned int index = 0)
+    {
+        return std::make_shared<MeshStream>(name, type, index);
+    }
 
-  /// Reserve memory for a given number of elements
-  void reserve(size_t elementCount) {
-    _data.reserve(elementCount * (size_t)_stride);
-  }
+    /// Reserve memory for a given number of elements
+    void reserve(size_t elementCount)
+    {
+        _data.reserve(elementCount * (size_t) _stride);
+    }
 
-  /// Resize data to an given number of elements
-  void resize(size_t elementCount) {
-    _data.resize(elementCount * (size_t)_stride);
-  }
+    /// Resize data to an given number of elements
+    void resize(size_t elementCount)
+    {
+        _data.resize(elementCount * (size_t) _stride);
+    }
 
-  /// Get stream name
-  const string &getName() const { return _name; }
+    /// Get stream name
+    const string& getName() const
+    {
+        return _name;
+    }
 
-  /// Get stream attribute name
-  const string &getType() const { return _type; }
+    /// Get stream attribute name
+    const string& getType() const
+    {
+        return _type;
+    }
 
-  /// Get stream index
-  unsigned int getIndex() const { return _index; }
+    /// Get stream index
+    unsigned int getIndex() const
+    {
+        return _index;
+    }
 
-  /// Return the raw float vector
-  MeshFloatBuffer &getData() { return _data; }
+    /// Return the raw float vector
+    MeshFloatBuffer& getData()
+    {
+        return _data;
+    }
 
-  /// Return the raw float vector
-  const MeshFloatBuffer &getData() const { return _data; }
+    /// Return the raw float vector
+    const MeshFloatBuffer& getData() const
+    {
+        return _data;
+    }
 
-  // Return the typed element at the given index
-  template <class T> T &getElement(size_t index) {
-    return reinterpret_cast<T *>(getData().data())[index];
-  }
+    // Return the typed element at the given index
+    template <class T> T& getElement(size_t index)
+    {
+        return reinterpret_cast<T*>(getData().data())[index];
+    }
 
-  // Return the typed element at the given index
-  template <class T> const T &getElement(size_t index) const {
-    return reinterpret_cast<const T *>(getData().data())[index];
-  }
+    // Return the typed element at the given index
+    template <class T> const T& getElement(size_t index) const
+    {
+        return reinterpret_cast<const T*>(getData().data())[index];
+    }
 
-  /// Get stride between elements
-  unsigned int getStride() const { return _stride; }
+    /// Get stride between elements
+    unsigned int getStride() const
+    {
+        return _stride;
+    }
 
-  /// Set stride between elements
-  void setStride(unsigned int stride) { _stride = stride; }
+    /// Set stride between elements
+    void setStride(unsigned int stride)
+    {
+        _stride = stride;
+    }
 
-  /// Get the number of elements
-  size_t getSize() const { return _data.size() / _stride; }
+    /// Get the number of elements
+    size_t getSize() const
+    {
+        return _data.size() / _stride;
+    }
 
-  /// Transform elements by a matrix
-  void transform(const Matrix44 &matrix);
+    /// Transform elements by a matrix
+    void transform(const Matrix44& matrix);
 
-protected:
-  string _name;
-  string _type;
-  unsigned int _index;
-  MeshFloatBuffer _data;
-  unsigned int _stride;
+  protected:
+    string _name;
+    string _type;
+    unsigned int _index;
+    MeshFloatBuffer _data;
+    unsigned int _stride;
 };
 
 /// Shared pointer to a mesh partition
@@ -114,48 +148,82 @@ using MeshPartitionPtr = shared_ptr<class MeshPartition>;
 /// @class MeshPartition
 /// Class that describes a sub-region of a mesh using vertex indexing.
 /// Note that a face is considered to be a triangle.
-class MX_RENDER_API MeshPartition {
-public:
-  MeshPartition() : _faceCount(0) {}
-  ~MeshPartition() {}
+class MX_RENDER_API MeshPartition
+{
+  public:
+    MeshPartition() :
+        _faceCount(0)
+    {
+    }
+    ~MeshPartition() { }
 
-  /// Create a new mesh partition
-  static MeshPartitionPtr create() { return std::make_shared<MeshPartition>(); }
+    /// Create a new mesh partition
+    static MeshPartitionPtr create()
+    {
+        return std::make_shared<MeshPartition>();
+    }
 
-  /// Resize data to the given number of indices
-  void resize(size_t indexCount) { _indices.resize(indexCount); }
+    /// Resize data to the given number of indices
+    void resize(size_t indexCount)
+    {
+        _indices.resize(indexCount);
+    }
 
-  /// Set the name of this partition.
-  void setName(const string &val) { _name = val; }
+    /// Set the name of this partition.
+    void setName(const string& val)
+    {
+        _name = val;
+    }
 
-  /// Return the name of this partition.
-  const string &getName() const { return _name; }
+    /// Return the name of this partition.
+    const string& getName() const
+    {
+        return _name;
+    }
 
-  /// Add a source name, representing a partition that was processed
-  /// to generate this one.
-  void addSourceName(const string &val) { _sourceNames.insert(val); }
+    /// Add a source name, representing a partition that was processed
+    /// to generate this one.
+    void addSourceName(const string& val)
+    {
+        _sourceNames.insert(val);
+    }
 
-  /// Return the vector of source names, representing all partitions
-  /// that were processed to generate this one.
-  const StringSet &getSourceNames() const { return _sourceNames; }
+    /// Return the vector of source names, representing all partitions
+    /// that were processed to generate this one.
+    const StringSet& getSourceNames() const
+    {
+        return _sourceNames;
+    }
 
-  /// Return indexing
-  MeshIndexBuffer &getIndices() { return _indices; }
+    /// Return indexing
+    MeshIndexBuffer& getIndices()
+    {
+        return _indices;
+    }
 
-  /// Return indexing
-  const MeshIndexBuffer &getIndices() const { return _indices; }
+    /// Return indexing
+    const MeshIndexBuffer& getIndices() const
+    {
+        return _indices;
+    }
 
-  /// Return number of faces
-  size_t getFaceCount() const { return _faceCount; }
+    /// Return number of faces
+    size_t getFaceCount() const
+    {
+        return _faceCount;
+    }
 
-  /// Set face count
-  void setFaceCount(size_t val) { _faceCount = val; }
+    /// Set face count
+    void setFaceCount(size_t val)
+    {
+        _faceCount = val;
+    }
 
-private:
-  string _name;
-  StringSet _sourceNames;
-  MeshIndexBuffer _indices;
-  size_t _faceCount;
+  private:
+    string _name;
+    StringSet _sourceNames;
+    MeshIndexBuffer _indices;
+    size_t _faceCount;
 };
 
 /// Shared pointer to a mesh
@@ -169,156 +237,211 @@ using MeshMap = std::unordered_map<string, MeshPtr>;
 
 /// @class Mesh
 /// Container for mesh data
-class MX_RENDER_API Mesh {
-public:
-  Mesh(const string &name);
-  ~Mesh() {}
+class MX_RENDER_API Mesh
+{
+  public:
+    Mesh(const string& name);
+    ~Mesh() { }
 
-  /// Create a new mesh
-  static MeshPtr create(const string &name) {
-    return std::make_shared<Mesh>(name);
-  }
-
-  /// Return the name of this mesh.
-  const string &getName() const { return _name; }
-
-  /// Set the mesh's source URI.
-  void setSourceUri(const string &sourceUri) { _sourceUri = sourceUri; }
-
-  /// Return true if this mesh has a source URI.
-  bool hasSourceUri() const { return !_sourceUri.empty(); }
-
-  /// Return the mesh's source URI.
-  const string &getSourceUri() const { return _sourceUri; }
-
-  /// Get a mesh stream by name
-  /// @param name Name of stream
-  /// @return Reference to a mesh stream if found
-  MeshStreamPtr getStream(const string &name) const {
-    for (const auto &stream : _streams) {
-      if (stream->getName() == name) {
-        return stream;
-      }
+    /// Create a new mesh
+    static MeshPtr create(const string& name)
+    {
+        return std::make_shared<Mesh>(name);
     }
-    return MeshStreamPtr();
-  }
 
-  /// Get a mesh stream by type and index
-  /// @param type Type of stream
-  /// @param index Index of stream
-  /// @return Reference to a mesh stream if found
-  MeshStreamPtr getStream(const string &type, unsigned int index) const {
-    for (const auto &stream : _streams) {
-      if (stream->getType() == type && stream->getIndex() == index) {
-        return stream;
-      }
+    /// Return the name of this mesh.
+    const string& getName() const
+    {
+        return _name;
     }
-    return MeshStreamPtr();
-  }
 
-  /// Add a mesh stream
-  void addStream(MeshStreamPtr stream) { _streams.push_back(stream); }
-
-  /// Remove a mesh stream
-  void removeStream(MeshStreamPtr stream) {
-    auto it = std::find(_streams.begin(), _streams.end(), stream);
-    if (it != _streams.end()) {
-      _streams.erase(it);
+    /// Set the mesh's source URI.
+    void setSourceUri(const string& sourceUri)
+    {
+        _sourceUri = sourceUri;
     }
-  }
 
-  /// Set vertex count
-  void setVertexCount(size_t val) { _vertexCount = val; }
+    /// Return true if this mesh has a source URI.
+    bool hasSourceUri() const
+    {
+        return !_sourceUri.empty();
+    }
 
-  /// Get vertex count
-  size_t getVertexCount() const { return _vertexCount; }
+    /// Return the mesh's source URI.
+    const string& getSourceUri() const
+    {
+        return _sourceUri;
+    }
 
-  /// Set the minimum bounds for the geometry
-  void setMinimumBounds(const Vector3 &val) { _minimumBounds = val; }
+    /// Get a mesh stream by name
+    /// @param name Name of stream
+    /// @return Reference to a mesh stream if found
+    MeshStreamPtr getStream(const string& name) const
+    {
+        for (const auto& stream : _streams)
+        {
+            if (stream->getName() == name)
+            {
+                return stream;
+            }
+        }
+        return MeshStreamPtr();
+    }
 
-  /// Return the minimum bounds for the geometry
-  const Vector3 &getMinimumBounds() const { return _minimumBounds; }
+    /// Get a mesh stream by type and index
+    /// @param type Type of stream
+    /// @param index Index of stream
+    /// @return Reference to a mesh stream if found
+    MeshStreamPtr getStream(const string& type, unsigned int index) const
+    {
+        for (const auto& stream : _streams)
+        {
+            if (stream->getType() == type &&
+                stream->getIndex() == index)
+            {
+                return stream;
+            }
+        }
+        return MeshStreamPtr();
+    }
 
-  /// Set the minimum bounds for the geometry
-  void setMaximumBounds(const Vector3 &v) { _maximumBounds = v; }
+    /// Add a mesh stream
+    void addStream(MeshStreamPtr stream)
+    {
+        _streams.push_back(stream);
+    }
 
-  /// Return the minimum bounds for the geometry
-  const Vector3 &getMaximumBounds() const { return _maximumBounds; }
+    /// Remove a mesh stream
+    void removeStream(MeshStreamPtr stream)
+    {
+        auto it = std::find(_streams.begin(), _streams.end(), stream);
+        if (it != _streams.end())
+        {
+            _streams.erase(it);
+        }
+    }
 
-  /// Set center of the bounding sphere
-  void setSphereCenter(const Vector3 &val) { _sphereCenter = val; }
+    /// Set vertex count
+    void setVertexCount(size_t val)
+    {
+        _vertexCount = val;
+    }
 
-  /// Return center of the bounding sphere
-  const Vector3 &getSphereCenter() const { return _sphereCenter; }
+    /// Get vertex count
+    size_t getVertexCount() const
+    {
+        return _vertexCount;
+    }
 
-  /// Set radius of the bounding sphere
-  void setSphereRadius(float val) { _sphereRadius = val; }
+    /// Set the minimum bounds for the geometry
+    void setMinimumBounds(const Vector3& val)
+    {
+        _minimumBounds = val;
+    }
 
-  /// Return radius of the bounding sphere
-  float getSphereRadius() const { return _sphereRadius; }
+    /// Return the minimum bounds for the geometry
+    const Vector3& getMinimumBounds() const
+    {
+        return _minimumBounds;
+    }
 
-  /// Return the number of mesh partitions
-  size_t getPartitionCount() const { return _partitions.size(); }
+    /// Set the minimum bounds for the geometry
+    void setMaximumBounds(const Vector3& v)
+    {
+        _maximumBounds = v;
+    }
 
-  /// Add a partition
-  void addPartition(MeshPartitionPtr partition) {
-    _partitions.push_back(partition);
-  }
+    /// Return the minimum bounds for the geometry
+    const Vector3& getMaximumBounds() const
+    {
+        return _maximumBounds;
+    }
 
-  /// Return a reference to a mesh partition
-  MeshPartitionPtr getPartition(size_t partIndex) const {
-    return _partitions[partIndex];
-  }
+    /// Set center of the bounding sphere
+    void setSphereCenter(const Vector3& val)
+    {
+        _sphereCenter = val;
+    }
 
-  /// Create texture coordinates from the given positions.
-  /// The texture coordinates are all initialize to a zero value.
-  /// @param positionStream Input position stream
-  /// @return The generated texture coordinate stream
-  MeshStreamPtr generateTextureCoordinates(MeshStreamPtr positionStream);
+    /// Return center of the bounding sphere
+    const Vector3& getSphereCenter() const
+    {
+        return _sphereCenter;
+    }
 
-  /// Generate face normals from the given positions.
-  /// @param positionStream Input position stream
-  /// @return The generated normal stream
-  MeshStreamPtr generateNormals(MeshStreamPtr positionStream);
+    /// Set radius of the bounding sphere
+    void setSphereRadius(float val)
+    {
+        _sphereRadius = val;
+    }
 
-  /// Generate tangents from the given positions, normals, and texture
-  /// coordinates.
-  /// @param positionStream Input position stream
-  /// @param normalStream Input normal stream
-  /// @param texcoordStream Input texcoord stream
-  /// @return The generated tangent stream, on success; otherwise, a null
-  /// pointer.
-  MeshStreamPtr generateTangents(MeshStreamPtr positionStream,
-                                 MeshStreamPtr normalStream,
-                                 MeshStreamPtr texcoordStream);
+    /// Return radius of the bounding sphere
+    float getSphereRadius() const
+    {
+        return _sphereRadius;
+    }
 
-  /// Generate bitangents from the given normals and tangents.
-  /// @param normalStream Input normal stream
-  /// @param tangentStream Input tangent stream
-  /// @return The generated bitangent stream, on success; otherwise, a null
-  /// pointer.
-  MeshStreamPtr generateBitangents(MeshStreamPtr normalStream,
-                                   MeshStreamPtr tangentStream);
+    /// Return the number of mesh partitions
+    size_t getPartitionCount() const
+    {
+        return _partitions.size();
+    }
 
-  /// Merge all mesh partitions into one.
-  void mergePartitions();
+    /// Add a partition
+    void addPartition(MeshPartitionPtr partition)
+    {
+        _partitions.push_back(partition);
+    }
 
-  /// Split the mesh into a single partition per UDIM.
-  void splitByUdims();
+    /// Return a reference to a mesh partition
+    MeshPartitionPtr getPartition(size_t partIndex) const
+    {
+        return _partitions[partIndex];
+    }
 
-private:
-  string _name;
-  string _sourceUri;
+    /// Create texture coordinates from the given positions.
+    /// The texture coordinates are all initialize to a zero value.
+    /// @param positionStream Input position stream
+    /// @return The generated texture coordinate stream
+    MeshStreamPtr generateTextureCoordinates(MeshStreamPtr positionStream);
 
-  Vector3 _minimumBounds;
-  Vector3 _maximumBounds;
+    /// Generate face normals from the given positions.
+    /// @param positionStream Input position stream
+    /// @return The generated normal stream
+    MeshStreamPtr generateNormals(MeshStreamPtr positionStream);
 
-  Vector3 _sphereCenter;
-  float _sphereRadius;
+    /// Generate tangents from the given positions, normals, and texture coordinates.
+    /// @param positionStream Input position stream
+    /// @param normalStream Input normal stream
+    /// @param texcoordStream Input texcoord stream
+    /// @return The generated tangent stream, on success; otherwise, a null pointer.
+    MeshStreamPtr generateTangents(MeshStreamPtr positionStream, MeshStreamPtr normalStream, MeshStreamPtr texcoordStream);
 
-  MeshStreamList _streams;
-  size_t _vertexCount;
-  vector<MeshPartitionPtr> _partitions;
+    /// Generate bitangents from the given normals and tangents.
+    /// @param normalStream Input normal stream
+    /// @param tangentStream Input tangent stream
+    /// @return The generated bitangent stream, on success; otherwise, a null pointer.
+    MeshStreamPtr generateBitangents(MeshStreamPtr normalStream, MeshStreamPtr tangentStream);
+
+    /// Merge all mesh partitions into one.
+    void mergePartitions();
+
+    /// Split the mesh into a single partition per UDIM.
+    void splitByUdims();
+
+  private:
+    string _name;
+    string _sourceUri;
+
+    Vector3 _minimumBounds;
+    Vector3 _maximumBounds;
+
+    Vector3 _sphereCenter;
+    float _sphereRadius;
+
+    MeshStreamList _streams;
+    size_t _vertexCount;
+    vector<MeshPartitionPtr> _partitions;
 };
 
 MATERIALX_NAMESPACE_END

@@ -28,82 +28,96 @@
 
 #include <string.h>
 
+
 namespace OpenSubdiv {
 namespace OPENSUBDIV_VERSION {
 
 namespace Osd {
 
 CpuGLVertexBuffer::CpuGLVertexBuffer(int numElements, int numVertices)
-    : _numElements(numElements), _numVertices(numVertices), _vbo(0),
-      _cpuBuffer(0), _dataDirty(true) {
+    : _numElements(numElements), _numVertices(numVertices),
+      _vbo(0), _cpuBuffer(0), _dataDirty(true) {
 
-  // Initialize internal OpenGL loader library if necessary
-  OpenSubdiv::internal::GLLoader::libraryInitializeGL();
+    // Initialize internal OpenGL loader library if necessary
+    OpenSubdiv::internal::GLLoader::libraryInitializeGL();
 }
 
 CpuGLVertexBuffer::~CpuGLVertexBuffer() {
 
-  delete[] _cpuBuffer;
+    delete[] _cpuBuffer;
 
-  if (_vbo) {
-    OpenSubdiv::internal::GLApi::glDeleteBuffers(1, &_vbo);
-  }
+    if (_vbo) {
+        glDeleteBuffers(1, &_vbo);
+    }
 }
 
-CpuGLVertexBuffer *CpuGLVertexBuffer::Create(int numElements, int numVertices,
-                                             void *) {
-  CpuGLVertexBuffer *instance = new CpuGLVertexBuffer(numElements, numVertices);
-  if (instance->allocate())
-    return instance;
-  delete instance;
-  return NULL;
+CpuGLVertexBuffer *
+CpuGLVertexBuffer::Create(int numElements, int numVertices, void *) {
+    CpuGLVertexBuffer *instance =
+        new CpuGLVertexBuffer(numElements, numVertices);
+    if (instance->allocate()) return instance;
+    delete instance;
+    return NULL;
 }
 
-void CpuGLVertexBuffer::UpdateData(const float *src, int startVertex,
-                                   int numVertices, void * /*deviceContext*/) {
+void
+CpuGLVertexBuffer::UpdateData(const float *src,
+                              int startVertex, int numVertices,
+                              void * /*deviceContext*/) {
 
-  memcpy(_cpuBuffer + startVertex * GetNumElements(), src,
-         GetNumElements() * numVertices * sizeof(float));
-  _dataDirty = true;
+    memcpy(_cpuBuffer + startVertex * GetNumElements(), src,
+           GetNumElements() * numVertices * sizeof(float));
+    _dataDirty = true;
 }
 
-int CpuGLVertexBuffer::GetNumElements() const { return _numElements; }
+int
+CpuGLVertexBuffer::GetNumElements() const {
 
-int CpuGLVertexBuffer::GetNumVertices() const { return _numVertices; }
-
-float *CpuGLVertexBuffer::BindCpuBuffer() {
-
-  _dataDirty = true; // caller might modify data
-  return _cpuBuffer;
+    return _numElements;
 }
 
-GLuint CpuGLVertexBuffer::BindVBO(void * /*deviceContext*/) {
+int
+CpuGLVertexBuffer::GetNumVertices() const {
 
-  if (!_dataDirty)
+    return _numVertices;
+}
+
+float*
+CpuGLVertexBuffer::BindCpuBuffer() {
+
+    _dataDirty = true; // caller might modify data
+    return _cpuBuffer;
+}
+
+GLuint
+CpuGLVertexBuffer::BindVBO(void * /*deviceContext*/) {
+
+    if (! _dataDirty)
+        return _vbo;
+
+    int size = GetNumElements() * GetNumVertices() * (int) sizeof(float);
+
+    if (! _vbo) {
+        glGenBuffers(1, &_vbo);
+    }
+
+    glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+    glBufferData(GL_ARRAY_BUFFER, size, _cpuBuffer, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    _dataDirty = false;
     return _vbo;
-
-  int size = GetNumElements() * GetNumVertices() * (int)sizeof(float);
-
-  if (!_vbo) {
-    OpenSubdiv::internal::GLApi::glGenBuffers(1, &_vbo);
-  }
-
-  OpenSubdiv::internal::GLApi::glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-  OpenSubdiv::internal::GLApi::glBufferData(GL_ARRAY_BUFFER, size, _cpuBuffer, GL_STATIC_DRAW);
-  OpenSubdiv::internal::GLApi::glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-  _dataDirty = false;
-  return _vbo;
 }
 
-bool CpuGLVertexBuffer::allocate() {
+bool
+CpuGLVertexBuffer::allocate() {
 
-  _cpuBuffer = new float[GetNumElements() * GetNumVertices()];
-  _dataDirty = true;
-  return true;
+    _cpuBuffer = new float[GetNumElements() * GetNumVertices()];
+    _dataDirty = true;
+    return true;
 }
 
-} // end namespace Osd
+}  // end namespace Osd
 
-} // end namespace OPENSUBDIV_VERSION
-} // end namespace OpenSubdiv
+}  // end namespace OPENSUBDIV_VERSION
+}  // end namespace OpenSubdiv

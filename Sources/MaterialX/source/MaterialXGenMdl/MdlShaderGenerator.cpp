@@ -3,800 +3,821 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-#include <MaterialX/MXGenMdlShaderGenerator.h>
+#include <MaterialX/MXGenMdlMdlShaderGenerator.h>
 
-#include <MaterialX/MXGenMdlBlurNodeMdl.h>
-#include <MaterialX/MXGenMdlClosureCompoundNodeMdl.h>
-#include <MaterialX/MXGenMdlClosureLayerNodeMdl.h>
-#include <MaterialX/MXGenMdlClosureSourceCodeNodeMdl.h>
-#include <MaterialX/MXGenMdlCombineNodeMdl.h>
-#include <MaterialX/MXGenMdlCompoundNodeMdl.h>
-#include <MaterialX/MXGenMdlHeightToNormalNodeMdl.h>
-#include <MaterialX/MXGenMdlImageNodeMdl.h>
-#include <MaterialX/MXGenMdlMaterialNodeMdl.h>
-#include <MaterialX/MXGenMdlSourceCodeNodeMdl.h>
-#include <MaterialX/MXGenMdlSurfaceNodeMdl.h>
-#include <MaterialX/MXGenMdlSwizzleNodeMdl.h>
-#include <MaterialX/MXGenMdlSyntax.h>
+#include <MaterialX/MXGenMdlMdlSyntax.h>
+#include <MaterialX/MXGenMdlNodes/CompoundNodeMdl.h>
+#include <MaterialX/MXGenMdlNodes/SourceCodeNodeMdl.h>
+#include <MaterialX/MXGenMdlNodes/MaterialNodeMdl.h>
+#include <MaterialX/MXGenMdlNodes/SurfaceNodeMdl.h>
+#include <MaterialX/MXGenMdlNodes/HeightToNormalNodeMdl.h>
+#include <MaterialX/MXGenMdlNodes/BlurNodeMdl.h>
+#include <MaterialX/MXGenMdlNodes/ClosureLayerNodeMdl.h>
+#include <MaterialX/MXGenMdlNodes/ClosureCompoundNodeMdl.h>
+#include <MaterialX/MXGenMdlNodes/ClosureSourceCodeNodeMdl.h>
+#include <MaterialX/MXGenMdlNodes/CustomNodeMdl.h>
+#include <MaterialX/MXGenMdlNodes/ImageNodeMdl.h>
 
-#include <MaterialX/MXGenShader.h>
-#include <MaterialX/MXGenShaderClosureCompoundNode.h>
-#include <MaterialX/MXGenShaderClosureSourceCodeNode.h>
-#include <MaterialX/MXGenShaderConvertNode.h>
 #include <MaterialX/MXGenShaderGenContext.h>
-#include <MaterialX/MXGenShaderStage.h>
-#include <MaterialX/MXGenShaderSwitchNode.h>
+#include <MaterialX/MXGenShaderShader.h>
+#include <MaterialX/MXGenShaderShaderStage.h>
+#include <MaterialX/MXGenShaderUtil.h>
 
 MATERIALX_NAMESPACE_BEGIN
 
-namespace {
+namespace
+{
 
-const string MDL_VERSION = "1.6";
-
-const vector<string> DEFAULT_IMPORTS = {
+const vector<string> DEFAULT_IMPORTS =
+{
     "import ::df::*",
     "import ::base::*",
     "import ::math::*",
     "import ::state::*",
     "import ::anno::*",
     "import ::tex::*",
-    "import ::mx::swizzle::*",
-    "using ::mx::core import *",
-    "using ::mx::stdlib import *",
-    "using ::mx::pbrlib import *",
-    "using ::mx::sampling import *",
+    "using ::materialx::core import *",
+    "using ::materialx::sampling import *",
 };
+
+const vector<string> DEFAULT_VERSIONED_IMPORTS =
+{
+    "using ::materialx::stdlib_",
+    "using ::materialx::pbrlib_",
+};
+
+const string IMPORT_ALL = " import *";
+
+const string MDL_VERSION_1_6 = "1.6";
+const string MDL_VERSION_1_7 = "1.7";
+const string MDL_VERSION_1_8 = "1.8";
+const string MDL_VERSION_1_9 = "1.9";
+const string MDL_VERSION_1_10 = "1.10";
+const string MDL_VERSION_SUFFIX_1_6 = "1_6";
+const string MDL_VERSION_SUFFIX_1_7 = "1_7";
+const string MDL_VERSION_SUFFIX_1_8 = "1_8";
+const string MDL_VERSION_SUFFIX_1_9 = "1_9";
+const string MDL_VERSION_SUFFIX_1_10 = "1_10";
 
 } // anonymous namespace
 
 const string MdlShaderGenerator::TARGET = "genmdl";
+const string GenMdlOptions::GEN_CONTEXT_USER_DATA_KEY = "genmdloptions";
 
-const std::unordered_map<string, string>
-    MdlShaderGenerator::GEOMPROP_DEFINITIONS = {
-        {"Pobject", "state::transform_point(state::coordinate_internal, "
-                    "state::coordinate_object, state::position())"},
-        {"Pworld", "state::transform_point(state::coordinate_internal, "
-                   "state::coordinate_world, state::position())"},
-        {"Nobject", "state::transform_normal(state::coordinate_internal, "
-                    "state::coordinate_object, state::normal())"},
-        {"Nworld", "state::transform_normal(state::coordinate_internal, "
-                   "state::coordinate_world, state::normal())"},
-        {"Tobject", "state::transform_vector(state::coordinate_internal, "
-                    "state::coordinate_object, state::texture_tangent_u(0))"},
-        {"Tworld", "state::transform_vector(state::coordinate_internal, "
-                   "state::coordinate_world, state::texture_tangent_u(0))"},
-        {"Bobject", "state::transform_vector(state::coordinate_internal, "
-                    "state::coordinate_object, state::texture_tangent_v(0))"},
-        {"Bworld", "state::transform_vector(state::coordinate_internal, "
-                   "state::coordinate_world, state::texture_tangent_v(0))"},
-        {"UV0", "float2(state::texture_coordinate(0).x, "
-                "state::texture_coordinate(0).y)"},
-        {"Vworld", "state::direction()"}};
+const std::unordered_map<string, string> MdlShaderGenerator::GEOMPROP_DEFINITIONS =
+{
+    { "Pobject", "state::transform_point(state::coordinate_internal, state::coordinate_object, state::position())" },
+    { "Pworld", "state::transform_point(state::coordinate_internal, state::coordinate_world, state::position())" },
+    { "Nobject", "state::transform_normal(state::coordinate_internal, state::coordinate_object, state::normal())" },
+    { "Nworld", "state::transform_normal(state::coordinate_internal, state::coordinate_world, state::normal())" },
+    { "Tobject", "state::transform_vector(state::coordinate_internal, state::coordinate_object, state::texture_tangent_u(0))" },
+    { "Tworld", "state::transform_vector(state::coordinate_internal, state::coordinate_world, state::texture_tangent_u(0))" },
+    { "Bobject", "state::transform_vector(state::coordinate_internal, state::coordinate_object, state::texture_tangent_v(0))" },
+    { "Bworld", "state::transform_vector(state::coordinate_internal, state::coordinate_world, state::texture_tangent_v(0))" },
+    { "UV0", "float2(state::texture_coordinate(0).x, state::texture_coordinate(0).y)" },
+    { "Vworld", "state::direction()" }
+};
 
 //
 // MdlShaderGenerator methods
 //
 
-MdlShaderGenerator::MdlShaderGenerator()
-    : ShaderGenerator(MdlSyntax::create()) {
-  // Register build-in implementations
+MdlShaderGenerator::MdlShaderGenerator(TypeSystemPtr typeSystem) :
+    ShaderGenerator(typeSystem, MdlSyntax::create(typeSystem))
+{
+    // Register custom types to handle enumeration output
+    _typeSystem->registerType(Type::MDL_COORDINATESPACE);
+    _typeSystem->registerType(Type::MDL_ADDRESSMODE);
+    _typeSystem->registerType(Type::MDL_FILTERLOOKUPMODE);
+    _typeSystem->registerType(Type::MDL_FILTERTYPE);
+    _typeSystem->registerType(Type::MDL_DISTRIBUTIONTYPE);
+    _typeSystem->registerType(Type::MDL_SCATTER_MODE);
 
-  // <!-- <surfacematerial> -->
-  registerImplementation("IM_surfacematerial_" + MdlShaderGenerator::TARGET,
-                         MaterialNodeMdl::create);
+    // Register build-in implementations
 
-  // <!-- <surface> -->
-  registerImplementation("IM_surface_" + MdlShaderGenerator::TARGET,
-                         SurfaceNodeMdl::create);
+    // <!-- <surfacematerial> -->
+    registerImplementation("IM_surfacematerial_" + MdlShaderGenerator::TARGET, MaterialNodeMdl::create);
 
-  // <!-- <swizzle> -->
-  // <!-- from type : float -->
-  registerImplementation("IM_swizzle_float_color3_" +
-                             MdlShaderGenerator::TARGET,
-                         SwizzleNodeMdl::create);
-  registerImplementation("IM_swizzle_float_color4_" +
-                             MdlShaderGenerator::TARGET,
-                         SwizzleNodeMdl::create);
-  registerImplementation("IM_swizzle_float_vector2_" +
-                             MdlShaderGenerator::TARGET,
-                         SwizzleNodeMdl::create);
-  registerImplementation("IM_swizzle_float_vector3_" +
-                             MdlShaderGenerator::TARGET,
-                         SwizzleNodeMdl::create);
-  registerImplementation("IM_swizzle_float_vector4_" +
-                             MdlShaderGenerator::TARGET,
-                         SwizzleNodeMdl::create);
-  // <!-- from type : color3 -->
-  registerImplementation("IM_swizzle_color3_float_" +
-                             MdlShaderGenerator::TARGET,
-                         SwizzleNodeMdl::create);
-  registerImplementation("IM_swizzle_color3_color3_" +
-                             MdlShaderGenerator::TARGET,
-                         SwizzleNodeMdl::create);
-  registerImplementation("IM_swizzle_color3_color4_" +
-                             MdlShaderGenerator::TARGET,
-                         SwizzleNodeMdl::create);
-  registerImplementation("IM_swizzle_color3_vector2_" +
-                             MdlShaderGenerator::TARGET,
-                         SwizzleNodeMdl::create);
-  registerImplementation("IM_swizzle_color3_vector3_" +
-                             MdlShaderGenerator::TARGET,
-                         SwizzleNodeMdl::create);
-  registerImplementation("IM_swizzle_color3_vector4_" +
-                             MdlShaderGenerator::TARGET,
-                         SwizzleNodeMdl::create);
-  // <!-- from type : color4 -->
-  registerImplementation("IM_swizzle_color4_float_" +
-                             MdlShaderGenerator::TARGET,
-                         SwizzleNodeMdl::create);
-  registerImplementation("IM_swizzle_color4_color3_" +
-                             MdlShaderGenerator::TARGET,
-                         SwizzleNodeMdl::create);
-  registerImplementation("IM_swizzle_color4_color4_" +
-                             MdlShaderGenerator::TARGET,
-                         SwizzleNodeMdl::create);
-  registerImplementation("IM_swizzle_color4_vector2_" +
-                             MdlShaderGenerator::TARGET,
-                         SwizzleNodeMdl::create);
-  registerImplementation("IM_swizzle_color4_vector3_" +
-                             MdlShaderGenerator::TARGET,
-                         SwizzleNodeMdl::create);
-  registerImplementation("IM_swizzle_color4_vector4_" +
-                             MdlShaderGenerator::TARGET,
-                         SwizzleNodeMdl::create);
-  // <!-- from type : vector2 -->
-  registerImplementation("IM_swizzle_vector2_float_" +
-                             MdlShaderGenerator::TARGET,
-                         SwizzleNodeMdl::create);
-  registerImplementation("IM_swizzle_vector2_color3_" +
-                             MdlShaderGenerator::TARGET,
-                         SwizzleNodeMdl::create);
-  registerImplementation("IM_swizzle_vector2_color4_" +
-                             MdlShaderGenerator::TARGET,
-                         SwizzleNodeMdl::create);
-  registerImplementation("IM_swizzle_vector2_vector2_" +
-                             MdlShaderGenerator::TARGET,
-                         SwizzleNodeMdl::create);
-  registerImplementation("IM_swizzle_vector2_vector3_" +
-                             MdlShaderGenerator::TARGET,
-                         SwizzleNodeMdl::create);
-  registerImplementation("IM_swizzle_vector2_vector4_" +
-                             MdlShaderGenerator::TARGET,
-                         SwizzleNodeMdl::create);
-  // <!-- from type : vector3 -->
-  registerImplementation("IM_swizzle_vector3_float_" +
-                             MdlShaderGenerator::TARGET,
-                         SwizzleNodeMdl::create);
-  registerImplementation("IM_swizzle_vector3_color3_" +
-                             MdlShaderGenerator::TARGET,
-                         SwizzleNodeMdl::create);
-  registerImplementation("IM_swizzle_vector3_color4_" +
-                             MdlShaderGenerator::TARGET,
-                         SwizzleNodeMdl::create);
-  registerImplementation("IM_swizzle_vector3_vector2_" +
-                             MdlShaderGenerator::TARGET,
-                         SwizzleNodeMdl::create);
-  registerImplementation("IM_swizzle_vector3_vector3_" +
-                             MdlShaderGenerator::TARGET,
-                         SwizzleNodeMdl::create);
-  registerImplementation("IM_swizzle_vector3_vector4_" +
-                             MdlShaderGenerator::TARGET,
-                         SwizzleNodeMdl::create);
-  // <!-- from type : vector4 -->
-  registerImplementation("IM_swizzle_vector4_float_" +
-                             MdlShaderGenerator::TARGET,
-                         SwizzleNodeMdl::create);
-  registerImplementation("IM_swizzle_vector4_color3_" +
-                             MdlShaderGenerator::TARGET,
-                         SwizzleNodeMdl::create);
-  registerImplementation("IM_swizzle_vector4_color4_" +
-                             MdlShaderGenerator::TARGET,
-                         SwizzleNodeMdl::create);
-  registerImplementation("IM_swizzle_vector4_vector2_" +
-                             MdlShaderGenerator::TARGET,
-                         SwizzleNodeMdl::create);
-  registerImplementation("IM_swizzle_vector4_vector3_" +
-                             MdlShaderGenerator::TARGET,
-                         SwizzleNodeMdl::create);
-  registerImplementation("IM_swizzle_vector4_vector4_" +
-                             MdlShaderGenerator::TARGET,
-                         SwizzleNodeMdl::create);
+    // <!-- <surface> -->
+    registerImplementation("IM_surface_" + MdlShaderGenerator::TARGET, SurfaceNodeMdl::create);
 
-  // <!-- <convert> -->
-  registerImplementation("IM_convert_float_color3_" +
-                             MdlShaderGenerator::TARGET,
-                         ConvertNode::create);
-  registerImplementation("IM_convert_float_color4_" +
-                             MdlShaderGenerator::TARGET,
-                         ConvertNode::create);
-  registerImplementation("IM_convert_float_vector2_" +
-                             MdlShaderGenerator::TARGET,
-                         ConvertNode::create);
-  registerImplementation("IM_convert_float_vector3_" +
-                             MdlShaderGenerator::TARGET,
-                         ConvertNode::create);
-  registerImplementation("IM_convert_float_vector4_" +
-                             MdlShaderGenerator::TARGET,
-                         ConvertNode::create);
-  registerImplementation("IM_convert_vector2_vector3_" +
-                             MdlShaderGenerator::TARGET,
-                         ConvertNode::create);
-  registerImplementation("IM_convert_vector3_vector2_" +
-                             MdlShaderGenerator::TARGET,
-                         ConvertNode::create);
-  registerImplementation("IM_convert_vector3_color3_" +
-                             MdlShaderGenerator::TARGET,
-                         ConvertNode::create);
-  registerImplementation("IM_convert_vector3_vector4_" +
-                             MdlShaderGenerator::TARGET,
-                         ConvertNode::create);
-  registerImplementation("IM_convert_vector4_vector3_" +
-                             MdlShaderGenerator::TARGET,
-                         ConvertNode::create);
-  registerImplementation("IM_convert_vector4_color4_" +
-                             MdlShaderGenerator::TARGET,
-                         ConvertNode::create);
-  registerImplementation("IM_convert_color3_vector3_" +
-                             MdlShaderGenerator::TARGET,
-                         ConvertNode::create);
-  registerImplementation("IM_convert_color4_vector4_" +
-                             MdlShaderGenerator::TARGET,
-                         ConvertNode::create);
-  registerImplementation("IM_convert_color3_color4_" +
-                             MdlShaderGenerator::TARGET,
-                         ConvertNode::create);
-  registerImplementation("IM_convert_color4_color3_" +
-                             MdlShaderGenerator::TARGET,
-                         ConvertNode::create);
-  registerImplementation("IM_convert_boolean_float_" +
-                             MdlShaderGenerator::TARGET,
-                         ConvertNode::create);
-  registerImplementation("IM_convert_integer_float_" +
-                             MdlShaderGenerator::TARGET,
-                         ConvertNode::create);
+    // <!-- <blur> -->
+    registerImplementation("IM_blur_float_" + MdlShaderGenerator::TARGET, BlurNodeMdl::create);
+    registerImplementation("IM_blur_color3_" + MdlShaderGenerator::TARGET, BlurNodeMdl::create);
+    registerImplementation("IM_blur_color4_" + MdlShaderGenerator::TARGET, BlurNodeMdl::create);
+    registerImplementation("IM_blur_vector2_" + MdlShaderGenerator::TARGET, BlurNodeMdl::create);
+    registerImplementation("IM_blur_vector3_" + MdlShaderGenerator::TARGET, BlurNodeMdl::create);
+    registerImplementation("IM_blur_vector4_" + MdlShaderGenerator::TARGET, BlurNodeMdl::create);
 
-  // <!-- <combine> -->
-  registerImplementation("IM_combine2_vector2_" + MdlShaderGenerator::TARGET,
-                         CombineNodeMdl::create);
-  registerImplementation("IM_combine2_color4CF_" + MdlShaderGenerator::TARGET,
-                         CombineNodeMdl::create);
-  registerImplementation("IM_combine2_vector4VF_" + MdlShaderGenerator::TARGET,
-                         CombineNodeMdl::create);
-  registerImplementation("IM_combine2_vector4VV_" + MdlShaderGenerator::TARGET,
-                         CombineNodeMdl::create);
-  registerImplementation("IM_combine3_color3_" + MdlShaderGenerator::TARGET,
-                         CombineNodeMdl::create);
-  registerImplementation("IM_combine3_vector3_" + MdlShaderGenerator::TARGET,
-                         CombineNodeMdl::create);
-  registerImplementation("IM_combine4_color4_" + MdlShaderGenerator::TARGET,
-                         CombineNodeMdl::create);
-  registerImplementation("IM_combine4_vector4_" + MdlShaderGenerator::TARGET,
-                         CombineNodeMdl::create);
+    // <!-- <heighttonormal> -->
+    registerImplementation("IM_heighttonormal_vector3_" + MdlShaderGenerator::TARGET, HeightToNormalNodeMdl::create);
 
-  // <!-- <blur> -->
-  registerImplementation("IM_blur_float_" + MdlShaderGenerator::TARGET,
-                         BlurNodeMdl::create);
-  registerImplementation("IM_blur_color3_" + MdlShaderGenerator::TARGET,
-                         BlurNodeMdl::create);
-  registerImplementation("IM_blur_color4_" + MdlShaderGenerator::TARGET,
-                         BlurNodeMdl::create);
-  registerImplementation("IM_blur_vector2_" + MdlShaderGenerator::TARGET,
-                         BlurNodeMdl::create);
-  registerImplementation("IM_blur_vector3_" + MdlShaderGenerator::TARGET,
-                         BlurNodeMdl::create);
-  registerImplementation("IM_blur_vector4_" + MdlShaderGenerator::TARGET,
-                         BlurNodeMdl::create);
+    // <!-- <layer> -->
+    registerImplementation("IM_layer_bsdf_" + MdlShaderGenerator::TARGET, ClosureLayerNodeMdl::create);
+    registerImplementation("IM_layer_vdf_" + MdlShaderGenerator::TARGET, ClosureLayerNodeMdl::create);
 
-  // <!-- <heighttonormal> -->
-  registerImplementation("IM_heighttonormal_vector3_" +
-                             MdlShaderGenerator::TARGET,
-                         HeightToNormalNodeMdl::create);
+    // <!-- <dielectric_bsdf> -->
+    registerImplementation("IM_dielectric_bsdf_" + MdlShaderGenerator::TARGET, LayerableNodeMdl::create);
 
-  // <!-- <layer> -->
-  registerImplementation("IM_layer_bsdf_" + MdlShaderGenerator::TARGET,
-                         ClosureLayerNodeMdl::create);
-  registerImplementation("IM_layer_vdf_" + MdlShaderGenerator::TARGET,
-                         ClosureLayerNodeMdl::create);
+    // <!-- <generalized_schlick_bsdf> -->
+    registerImplementation("IM_generalized_schlick_bsdf_" + MdlShaderGenerator::TARGET, LayerableNodeMdl::create);
 
-  registerImplementation("IM_mix_bsdf_" + MdlShaderGenerator::TARGET,
-                         MixBsdfNodeMdl::create);
-  registerImplementation("IM_add_bsdf_" + MdlShaderGenerator::TARGET,
-                         AddOrMultiplyBsdfNodeMdl::create);
-  registerImplementation("IM_multiply_bsdfC_" + MdlShaderGenerator::TARGET,
-                         AddOrMultiplyBsdfNodeMdl::create);
-  registerImplementation("IM_multiply_bsdfF_" + MdlShaderGenerator::TARGET,
-                         AddOrMultiplyBsdfNodeMdl::create);
+    // <!-- <sheen_bsdf> -->
+    registerImplementation("IM_sheen_bsdf_" + MdlShaderGenerator::TARGET, LayerableNodeMdl::create);
 
-  // <!-- <thin_film_bsdf> -->
-  registerImplementation("IM_thin_film_bsdf_" + MdlShaderGenerator::TARGET,
-                         ClosureLayerNodeMdl::create);
-
-  // <!-- <dielectric_bsdf> -->
-  registerImplementation("IM_dielectric_bsdf_" + MdlShaderGenerator::TARGET,
-                         ThinFilmReceiverNodeMdl::create);
-
-  // <!-- <conductor_bsdf> -->
-  registerImplementation("IM_conductor_bsdf_" + MdlShaderGenerator::TARGET,
-                         ThinFilmReceiverNodeMdl::create);
-
-  // <!-- <generalized_schlick_bsdf> -->
-  registerImplementation("IM_generalized_schlick_bsdf_" +
-                             MdlShaderGenerator::TARGET,
-                         ThinFilmReceiverNodeMdl::create);
-
-  // <!-- <sheen_bsdf> -->
-  registerImplementation("IM_sheen_bsdf_" + MdlShaderGenerator::TARGET,
-                         LayerableNodeMdl::create);
-
-  // <!-- <image> -->
-  registerImplementation("IM_image_float_" + MdlShaderGenerator::TARGET,
-                         ImageNodeMdl::create);
-  registerImplementation("IM_image_color3_" + MdlShaderGenerator::TARGET,
-                         ImageNodeMdl::create);
-  registerImplementation("IM_image_color4_" + MdlShaderGenerator::TARGET,
-                         ImageNodeMdl::create);
-  registerImplementation("IM_image_vector2_" + MdlShaderGenerator::TARGET,
-                         ImageNodeMdl::create);
-  registerImplementation("IM_image_vector3_" + MdlShaderGenerator::TARGET,
-                         ImageNodeMdl::create);
-  registerImplementation("IM_image_vector4_" + MdlShaderGenerator::TARGET,
-                         ImageNodeMdl::create);
+    // <!-- <image> -->
+    registerImplementation("IM_image_float_" + MdlShaderGenerator::TARGET, ImageNodeMdl::create);
+    registerImplementation("IM_image_color3_" + MdlShaderGenerator::TARGET, ImageNodeMdl::create);
+    registerImplementation("IM_image_color4_" + MdlShaderGenerator::TARGET, ImageNodeMdl::create);
+    registerImplementation("IM_image_vector2_" + MdlShaderGenerator::TARGET, ImageNodeMdl::create);
+    registerImplementation("IM_image_vector3_" + MdlShaderGenerator::TARGET, ImageNodeMdl::create);
+    registerImplementation("IM_image_vector4_" + MdlShaderGenerator::TARGET, ImageNodeMdl::create);
 }
 
-ShaderPtr MdlShaderGenerator::generate(const string &name, ElementPtr element,
-                                       GenContext &context) const {
-  // For MDL we cannot cache node implementations between generation calls,
-  // because this generator needs to do edits to subgraphs implementations
-  // depending on the context in which a node is used.
-  context.clearNodeImplementations();
+ShaderPtr MdlShaderGenerator::generate(const string& name, ElementPtr element, GenContext& context) const
+{
+    // For MDL we cannot cache node implementations between generation calls,
+    // because this generator needs to do edits to subgraphs implementations
+    // depending on the context in which a node is used.
+    context.clearNodeImplementations();
 
-  ShaderPtr shader = createShader(name, element, context);
+    ShaderPtr shader = createShader(name, element, context);
 
-  // Request fixed floating-point notation for consistency across targets.
-  ScopedFloatFormatting fmt(Value::FloatFormatFixed);
+    // Request fixed floating-point notation for consistency across targets.
+    ScopedFloatFormatting fmt(Value::FloatFormatFixed);
 
-  ShaderGraph &graph = shader->getGraph();
-  ShaderStage &stage = shader->getStage(Stage::PIXEL);
+    ShaderGraph& graph = shader->getGraph();
+    ShaderStage& stage = shader->getStage(Stage::PIXEL);
 
-  // Emit version
-  emitLine("mdl " + MDL_VERSION, stage);
-  emitLineBreak(stage);
-
-  emitLine("using mx = materialx", stage);
-
-  // Emit module imports
-  for (const string &module : DEFAULT_IMPORTS) {
-    emitLine(module, stage);
-  }
-
-  // Add global constants and type definitions
-  emitTypeDefinitions(context, stage);
-
-  // Emit function definitions for all nodes
-  emitFunctionDefinitions(graph, context, stage);
-
-  // Emit shader type, determined from the first
-  // output if there are multiple outputs.
-  const ShaderGraphOutputSocket *outputSocket = graph.getOutputSocket(0);
-  emitString("export material ", stage);
-
-  // Begin shader signature. Note that makeIdentifier() will sanitize the name.
-  string functionName = shader->getName();
-  _syntax->makeIdentifier(functionName, graph.getIdentifierMap());
-  setFunctionName(functionName, stage);
-  emitLine(functionName, stage, false);
-  emitScopeBegin(stage, Syntax::PARENTHESES);
-
-  // Emit shader inputs
-  emitShaderInputs(stage.getInputBlock(MDL::INPUTS), stage);
-
-  // End shader signature
-  emitScopeEnd(stage);
-
-  // Begin shader body
-  emitLine("= let", stage, false);
-  emitScopeBegin(stage);
-
-  // Emit constants
-  const VariableBlock &constants = stage.getConstantBlock();
-  if (constants.size()) {
-    emitVariableDeclarations(constants, _syntax->getConstantQualifier(),
-                             Syntax::SEMICOLON, context, stage);
+    // Emit version
+    emitMdlVersionNumber(context, stage);
     emitLineBreak(stage);
-  }
 
-  // Emit all texturing nodes. These are inputs to any
-  // closure/shader nodes and need to be emitted first.
-  emitFunctionCalls(graph, context, stage, ShaderNode::Classification::TEXTURE);
-
-  // Emit function calls for "root" closure/shader nodes.
-  // These will internally emit function calls for any dependent closure nodes
-  // upstream.
-  for (ShaderGraphOutputSocket *socket : graph.getOutputSockets()) {
-    if (socket->getConnection()) {
-      const ShaderNode *upstream = socket->getConnection()->getNode();
-      if (upstream->getParent() == &graph &&
-          (upstream->hasClassification(ShaderNode::Classification::CLOSURE) ||
-           upstream->hasClassification(ShaderNode::Classification::SHADER))) {
-        emitFunctionCall(*upstream, context, stage);
-      }
+    // Emit module imports
+    for (const string& module : DEFAULT_IMPORTS)
+    {
+        emitLine(module, stage);
     }
-  }
-
-  // Get final result
-  const string result = getUpstreamResult(outputSocket, context);
-
-  const TypeDesc *outputType = outputSocket->getType();
-  if (graph.hasClassification(ShaderNode::Classification::TEXTURE)) {
-    if (outputType == Type::DISPLACEMENTSHADER) {
-      emitLine("float3 displacement__ = " + result + ".geometry.displacement",
-               stage);
-      emitLine("color finalOutput__ = mk_color3("
-               "r: math::dot(displacement__, state::texture_tangent_u(0)),"
-               "g: math::dot(displacement__, state::texture_tangent_v(0)),"
-               "b: math::dot(displacement__, state::normal()))",
-               stage);
-    } else {
-      emitLine("float3 displacement__ = float3(0.0)", stage);
-      emitLine("color finalOutput__ = mk_color3(" + result + ")", stage);
+    for (const string& module : DEFAULT_VERSIONED_IMPORTS)
+    {
+        emitString(module, stage);
+        emitMdlVersionFilenameSuffix(context, stage);
+        emitString(IMPORT_ALL, stage);
+        emitLineEnd(stage, true);
     }
 
-    // End shader body
+    // Emit custom node imports for nodes in the graph
+    for (ShaderNode* node : graph.getNodes())
+    {
+        const ShaderNodeImpl& impl = node->getImplementation();
+        const CustomCodeNodeMdl* customNode = dynamic_cast<const CustomCodeNodeMdl*>(&impl);
+        if (customNode)
+        {
+            const string& importName = customNode->getQualifiedModuleName();
+            if (!importName.empty())
+            {
+                emitString("import ", stage);
+                emitString(importName, stage);
+                emitString("::*", stage);
+                emitLineEnd(stage, true);
+            }
+        }
+    }
+
+    // Add global constants and type definitions
+    emitTypeDefinitions(context, stage);
+
+    // Emit function definitions for all nodes
+    emitFunctionDefinitions(graph, context, stage);
+
+    // Emit shader type, determined from the first
+    // output if there are multiple outputs.
+    const ShaderGraphOutputSocket* outputSocket = graph.getOutputSocket(0);
+    emitString("export material ", stage);
+
+    // Begin shader signature. Note that makeIdentifier() will sanitize the name.
+    string functionName = shader->getName();
+    _syntax->makeIdentifier(functionName, graph.getIdentifierMap());
+    setFunctionName(functionName, stage);
+    emitLine(functionName, stage, false);
+    emitScopeBegin(stage, Syntax::PARENTHESES);
+
+    // Emit shader inputs
+    emitShaderInputs(element->getDocument(), stage.getInputBlock(MDL::INPUTS), stage);
+
+    // End shader signature
     emitScopeEnd(stage);
 
-    static const string textureMaterial =
-        "in material\n"
-        "(\n"
-        "    surface: material_surface(\n"
-        "        emission : material_emission(\n"
-        "            emission : df::diffuse_edf(),\n"
-        "            intensity : finalOutput__ * math::PI,\n"
-        "            mode : intensity_radiant_exitance\n"
-        "        )\n"
-        "    ),\n"
-        "    geometry: material_geometry(\n"
-        "       displacement : displacement__\n"
-        "    )\n"
-        ");";
-    emitBlock(textureMaterial, FilePath(), context, stage);
-  } else {
-    emitLine(_syntax->getTypeSyntax(outputType).getName() +
-                 " finalOutput__ = " + result,
-             stage);
+    // Begin shader body
+    emitLine("= let", stage, false);
+    emitScopeBegin(stage);
 
-    // End shader body
-    emitScopeEnd(stage);
+    // Emit constants
+    const VariableBlock& constants = stage.getConstantBlock();
+    if (constants.size())
+    {
+        emitVariableDeclarations(constants, _syntax->getConstantQualifier(), Syntax::SEMICOLON, context, stage);
+        emitLineBreak(stage);
+    }
 
-    static const string shaderMaterial = "in material(finalOutput__);";
-    emitBlock(shaderMaterial, FilePath(), context, stage);
-  }
+    // Emit shader inputs that have been filtered during printing of the public interface
+    const string uniformPrefix = _syntax->getUniformQualifier() + " ";
+    for (ShaderGraphInputSocket* inputSocket : graph.getInputSockets())
+    {
+        if (inputSocket->getConnections().size() &&
+            (inputSocket->getType().getSemantic() == TypeDesc::SEMANTIC_SHADER ||
+             inputSocket->getType().getSemantic() == TypeDesc::SEMANTIC_CLOSURE ||
+             inputSocket->getType().getSemantic() == TypeDesc::SEMANTIC_MATERIAL))
+        {
+            const string& qualifier = inputSocket->isUniform() || inputSocket->getType() == Type::FILENAME 
+                ? uniformPrefix 
+                : EMPTY_STRING;
+            const string& type = _syntax->getTypeName(inputSocket->getType());
 
-  // Perform token substitution
-  replaceTokens(_tokenSubstitutions, stage);
+            emitLineBegin(stage);
+            emitString(qualifier + type + " " + inputSocket->getVariable() + " = ", stage);
+            emitString(_syntax->getDefaultValue(inputSocket->getType(), true), stage);
+            emitLineEnd(stage, true);
+        }
+    }
 
-  return shader;
+    // Emit all texturing nodes. These are inputs to any
+    // closure/shader nodes and need to be emitted first.
+    emitFunctionCalls(graph, context, stage, ShaderNode::Classification::TEXTURE);
+
+    // Emit function calls for "root" closure/shader nodes.
+    // These will internally emit function calls for any dependent closure nodes upstream.
+    for (ShaderGraphOutputSocket* socket : graph.getOutputSockets())
+    {
+        if (socket->getConnection())
+        {
+            const ShaderNode* upstream = socket->getConnection()->getNode();
+            if (upstream->getParent() == &graph &&
+                (upstream->hasClassification(ShaderNode::Classification::CLOSURE) ||
+                 upstream->hasClassification(ShaderNode::Classification::SHADER)))
+            {
+                emitFunctionCall(*upstream, context, stage);
+            }
+        }
+    }
+
+    // Get final result
+    const string result = getUpstreamResult(outputSocket, context);
+
+    const TypeDesc outputType = outputSocket->getType();
+    // Try to return some meaningful color in case the output is not a material
+    if (graph.hasClassification(ShaderNode::Classification::TEXTURE))
+    {
+        if (outputType == Type::DISPLACEMENTSHADER)
+        {
+            emitLine("float3 displacement__ = " + result + ".geometry.displacement", stage);
+            emitLine("color finalOutput__ = mk_color3("
+                     "r: math::dot(displacement__, state::texture_tangent_u(0)),"
+                     "g: math::dot(displacement__, state::texture_tangent_v(0)),"
+                     "b: math::dot(displacement__, state::normal()))",
+                     stage);
+        }
+        else
+        {
+            emitLine("float3 displacement__ = float3(0.0)", stage);
+            std::string finalOutput = "mk_color3(0.0)";
+            if (outputType == Type::BOOLEAN)
+                finalOutput = result + " ? mk_color3(0.0, 1.0, 0.0) : mk_color3(1.0, 0.0, 0.0)";
+            else if (outputType == Type::INTEGER)
+                finalOutput = "mk_color3(" + result + " / 100)"; // arbitrary
+            else if (outputType == Type::FLOAT)
+                finalOutput = "mk_color3(" + result + ")";
+            else if (outputType == Type::VECTOR2)
+                finalOutput = "mk_color3(" + result + ".x, " + result + ".y, 0.0)";
+            else if (outputType == Type::VECTOR3)
+                finalOutput = "mk_color3(" + result + ")";
+            else if (outputType == Type::VECTOR4)
+                finalOutput = "mk_color3(" + result + ".x, " + result + ".y, " + result + ".z)";
+            else if (outputType == Type::COLOR3)
+                finalOutput = result;
+            else if (outputType == Type::COLOR4)
+                finalOutput = result + ".rgb";
+            else if (outputType == Type::MATRIX33 || outputType == Type::MATRIX44)
+                finalOutput = "mk_color3(" + result + "[0][0], " + result + "[1][1], " + result + "[2][2])";
+
+            emitLine("color finalOutput__ = " + finalOutput, stage);
+        }
+
+        // End shader body
+        emitScopeEnd(stage);
+
+        static const string textureMaterial =
+            "in material\n"
+            "(\n"
+            "    surface: material_surface(\n"
+            "        emission : material_emission(\n"
+            "            emission : df::diffuse_edf(),\n"
+            "            intensity : finalOutput__ * math::PI,\n"
+            "            mode : intensity_radiant_exitance\n"
+            "        )\n"
+            "    ),\n"
+            "    geometry: material_geometry(\n"
+            "       displacement : displacement__\n"
+            "    )\n"
+            ");";
+        emitBlock(textureMaterial, FilePath(), context, stage);
+    }
+    else
+    {
+        emitLine(_syntax->getTypeSyntax(outputType).getName() + " finalOutput__ = " + result, stage);
+
+        // End shader body
+        emitScopeEnd(stage);
+
+        static const string shaderMaterial = "in material(finalOutput__);";
+        emitBlock(shaderMaterial, FilePath(), context, stage);
+    }
+
+    // Perform token substitution
+    replaceTokens(_tokenSubstitutions, stage);
+
+    return shader;
 }
 
-ShaderNodeImplPtr
-MdlShaderGenerator::getImplementation(const NodeDef &nodedef,
-                                      GenContext &context) const {
-  InterfaceElementPtr implElement = nodedef.getImplementation(getTarget());
-  if (!implElement) {
-    return nullptr;
-  }
+ShaderNodeImplPtr MdlShaderGenerator::getImplementation(const NodeDef& nodedef, GenContext& context) const
+{
+    InterfaceElementPtr implElement = nodedef.getImplementation(getTarget());
+    if (!implElement)
+    {
+        return nullptr;
+    }
 
-  const string &name = implElement->getName();
+    const string& name = implElement->getName();
 
-  // Check if it's created and cached already.
-  ShaderNodeImplPtr impl = context.findNodeImplementation(name);
-  if (impl) {
+    // Check if it's created and cached already.
+    ShaderNodeImplPtr impl = context.findNodeImplementation(name);
+    if (impl)
+    {
+        return impl;
+    }
+
+    vector<OutputPtr> outputs = nodedef.getActiveOutputs();
+    if (outputs.empty())
+    {
+        throw ExceptionShaderGenError("NodeDef '" + nodedef.getName() + "' has no outputs defined");
+    }
+
+    const TypeDesc outputType = _typeSystem->getType(outputs[0]->getType());
+
+    if (implElement->isA<NodeGraph>())
+    {
+        // Use a compound implementation.
+        if (outputType.isClosure())
+        {
+            impl = ClosureCompoundNodeMdl::create();
+        }
+        else
+        {
+            impl = CompoundNodeMdl::create();
+        }
+    }
+    else if (implElement->isA<Implementation>())
+    {
+        // Try creating a new in the factory.
+        impl = _implFactory.create(name);
+        if (!impl)
+        {
+            // When `file` and `function` are provided we consider this node a user node
+            const string file = implElement->getTypedAttribute<string>("file");
+            const string function = implElement->getTypedAttribute<string>("function");
+            // Or, if `sourcecode` is provided we consider this node a user node with inline implementation
+            // inline implementations are not supposed to have replacement markers
+            const string sourcecode = implElement->getTypedAttribute<string>("sourcecode");
+            if ((!file.empty() && !function.empty()) || (!sourcecode.empty() && sourcecode.find("{{") == string::npos))
+            {
+                impl = CustomCodeNodeMdl::create();
+            }
+            else if (file.empty() && sourcecode.empty())
+            {
+                throw ExceptionShaderGenError("No valid MDL implementation found for '" + name + "'");
+            }
+            else
+            {
+                // Fall back to source code implementation.
+                if (outputType.isClosure())
+                {
+                    impl = ClosureSourceCodeNodeMdl::create();
+                }
+                else
+                {
+                    impl = SourceCodeNodeMdl::create();
+                }
+            }
+        }
+    }
+    if (!impl)
+    {
+        return nullptr;
+    }
+
+    impl->initialize(*implElement, context);
+
+    // Cache it.
+    context.addNodeImplementation(name, impl);
+
     return impl;
-  }
-
-  vector<OutputPtr> outputs = nodedef.getActiveOutputs();
-  if (outputs.empty()) {
-    throw ExceptionShaderGenError("NodeDef '" + nodedef.getName() +
-                                  "' has no outputs defined");
-  }
-
-  const TypeDesc *outputType = TypeDesc::get(outputs[0]->getType());
-
-  if (implElement->isA<NodeGraph>()) {
-    // Use a compound implementation.
-    if (outputType->isClosure()) {
-      impl = ClosureCompoundNodeMdl::create();
-    } else {
-      impl = CompoundNodeMdl::create();
-    }
-  } else if (implElement->isA<Implementation>()) {
-    // Try creating a new in the factory.
-    impl = _implFactory.create(name);
-    if (!impl) {
-      // Fall back to source code implementation.
-      if (outputType->isClosure()) {
-        impl = ClosureSourceCodeNodeMdl::create();
-      } else {
-        impl = SourceCodeNodeMdl::create();
-      }
-    }
-  }
-  if (!impl) {
-    return nullptr;
-  }
-
-  impl->initialize(*implElement, context);
-
-  // Cache it.
-  context.addNodeImplementation(name, impl);
-
-  return impl;
 }
 
-string MdlShaderGenerator::getUpstreamResult(const ShaderInput *input,
-                                             GenContext &context) const {
-  const ShaderOutput *upstreamOutput = input->getConnection();
+string MdlShaderGenerator::getUpstreamResult(const ShaderInput* input, GenContext& context) const
+{
+    const ShaderOutput* upstreamOutput = input->getConnection();
 
-  if (!upstreamOutput || upstreamOutput->getNode()->isAGraph()) {
-    return ShaderGenerator::getUpstreamResult(input, context);
-  }
-
-  string variable;
-  const ShaderNode *upstreamNode = upstreamOutput->getNode();
-  if (!upstreamNode->isAGraph() && upstreamNode->numOutputs() > 1) {
-    const CompoundNodeMdl *upstreamNodeMdl =
-        dynamic_cast<const CompoundNodeMdl *>(
-            &upstreamNode->getImplementation());
-    if (upstreamNodeMdl && upstreamNodeMdl->unrollReturnStructMembers()) {
-      variable = upstreamNode->getName() + "__" + upstreamOutput->getName();
-    } else {
-      variable =
-          upstreamNode->getName() + "_result.mxp_" + upstreamOutput->getName();
+    if (!upstreamOutput || upstreamOutput->getNode()->isAGraph())
+    {
+        return ShaderGenerator::getUpstreamResult(input, context);
     }
-  } else {
-    variable = upstreamOutput->getVariable();
-  }
 
-  if (!input->getChannels().empty()) {
-    variable = _syntax->getSwizzledVariable(
-        variable, input->getConnection()->getType(), input->getChannels(),
-        input->getType());
-  }
+    const MdlSyntax& mdlSyntax = static_cast<const MdlSyntax&>(getSyntax());
+    string variable;
+    const ShaderNode* upstreamNode = upstreamOutput->getNode();
+    if (!upstreamNode->isAGraph() && upstreamNode->numOutputs() > 1)
+    {
+        const CompoundNodeMdl* upstreamNodeMdl = dynamic_cast<const CompoundNodeMdl*>(&upstreamNode->getImplementation());
+        if (upstreamNodeMdl && upstreamNodeMdl->unrollReturnStructMembers())
+        {
+            variable = upstreamNode->getName() + "__" + upstreamOutput->getName();
+        }
+        else
+        {
+            const string& fieldName = upstreamOutput->getName();
+            const CustomCodeNodeMdl* upstreamCustomNodeMdl = dynamic_cast<const CustomCodeNodeMdl*>(&upstreamNode->getImplementation());
+            if (upstreamCustomNodeMdl)
+            {
+                // Prefix the port name depending on the CustomCodeNode
+                variable = upstreamNode->getName() + "_result." + upstreamCustomNodeMdl->modifyPortName(fieldName, mdlSyntax);
+            }
+            else
+            {
+                // Existing implementations and none user defined structs will keep the prefix always to not break existing content
+                variable = upstreamNode->getName() + "_result." + mdlSyntax.modifyPortName(upstreamOutput->getName());
+            }
+        }
+    }
+    else
+    {
+        variable = upstreamOutput->getVariable();
+    }
 
-  // Look for any additional suffix to append
-  string suffix;
-  context.getInputSuffix(input, suffix);
-  if (!suffix.empty()) {
-    variable += suffix;
-  }
+    // Look for any additional suffix to append
+    string suffix;
+    context.getInputSuffix(input, suffix);
+    if (!suffix.empty())
+    {
+        variable += suffix;
+    }
 
-  return variable;
+    return variable;
 }
 
-namespace {
+namespace
+{
 
 // [TODO]
 // Here we assume this bit of the port flags is unused.
 // Change this to a more general and safe solution.
-class ShaderPortFlagMdl {
-public:
-  static const uint32_t TRANSMISSION_IOR_DEPENDENCY = 1u << 31;
+class ShaderPortFlagMdl
+{
+  public:
+    static const uint32_t TRANSMISSION_IOR_DEPENDENCY = 1u << 31;
 };
 
-// Check if a graph has inputs with dependencies on transmission IOR on the
-// inside. Track all subgraphs found that has such a dependency, as well as
-// subgraphs that are found to have a varying connection to transmission IOR.
+// Check if a graph has inputs with dependencies on transmission IOR on the inside.
+// Track all subgraphs found that has such a dependency, as well as subgraphs that are
+// found to have a varying connection to transmission IOR.
 // Returns true if uniform ior dependencies are found.
-bool checkTransmissionIorDependencies(
-    ShaderGraph *g, std::set<ShaderGraph *> &graphsWithIorDependency,
-    std::set<ShaderGraph *> &graphsWithIorVarying) {
-  bool result = false;
-  for (ShaderNode *node : g->getNodes()) {
-    ShaderGraph *subgraph = node->getImplementation().getGraph();
-    if (subgraph) {
-      // Check recursively if this subgraph has IOR dependencies.
-      if (checkTransmissionIorDependencies(subgraph, graphsWithIorDependency,
-                                           graphsWithIorVarying)) {
-        for (ShaderOutput *socket : subgraph->getInputSockets()) {
-          if (socket->getFlag(ShaderPortFlagMdl::TRANSMISSION_IOR_DEPENDENCY)) {
-            ShaderInput *input = node->getInput(socket->getName());
-            ShaderOutput *source = input ? input->getConnection() : nullptr;
-            if (source) {
-              // Check if this is a graph interface connection.
-              if (source->getNode() == g) {
-                graphsWithIorDependency.insert(g);
-                source->setFlag(ShaderPortFlagMdl::TRANSMISSION_IOR_DEPENDENCY,
-                                true);
-                result = true;
-              } else if (source->getNode()->hasClassification(
-                             ShaderNode::Classification::CONSTANT)) {
-                // If the connection is to a constant node we can
-                // handled that here since it's just a uniform value.
-                ShaderInput *value =
-                    source->getNode()->getInput(ValueElement::VALUE_ATTRIBUTE);
-                if (value && value->getValue()) {
-                  input->setValue(value->getValue());
+bool checkTransmissionIorDependencies(ShaderGraph* g, std::set<ShaderGraph*>& graphsWithIorDependency, std::set<ShaderGraph*>& graphsWithIorVarying)
+{
+    bool result = false;
+    for (ShaderNode* node : g->getNodes())
+    {
+        ShaderGraph* subgraph = node->getImplementation().getGraph();
+        if (subgraph)
+        {
+            // Check recursively if this subgraph has IOR dependencies.
+            if (checkTransmissionIorDependencies(subgraph, graphsWithIorDependency, graphsWithIorVarying))
+            {
+                for (ShaderOutput* socket : subgraph->getInputSockets())
+                {
+                    if (socket->getFlag(ShaderPortFlagMdl::TRANSMISSION_IOR_DEPENDENCY))
+                    {
+                        ShaderInput* input = node->getInput(socket->getName());
+                        ShaderOutput* source = input ? input->getConnection() : nullptr;
+                        if (source)
+                        {
+                            // Check if this is a graph interface connection.
+                            if (source->getNode() == g)
+                            {
+                                graphsWithIorDependency.insert(g);
+                                source->setFlag(ShaderPortFlagMdl::TRANSMISSION_IOR_DEPENDENCY, true);
+                                result = true;
+                            }
+                            else if (source->getNode()->hasClassification(ShaderNode::Classification::CONSTANT))
+                            {
+                                // If the connection is to a constant node we can
+                                // handled that here since it's just a uniform value.
+                                ShaderInput* value = source->getNode()->getInput(ValueElement::VALUE_ATTRIBUTE);
+                                if (value && value->getValue())
+                                {
+                                    input->setValue(value->getValue());
+                                }
+                                input->breakConnection();
+                            }
+                            else
+                            {
+                                // If we get here we have to assume this is a varying connection.
+                                // Save the graph as a varying graph so we later can break its
+                                // internal connections to transmission IOR.
+                                graphsWithIorVarying.insert(subgraph);
+                                return false; // no need to continue with this subgraph
+                            }
+                        }
+                    }
                 }
-                input->breakConnection();
-              } else {
-                // If we get here we have to assume this is a varying
-                // connection. Save the graph as a varying graph so we later can
-                // break its internal connections to transmission IOR.
-                graphsWithIorVarying.insert(subgraph);
-                return false; // no need to continue with this subgraph
-              }
             }
-          }
         }
-      }
-    } else {
-      // Check for transmission BSDF node.
-      if (node->hasClassification(ShaderNode::Classification::BSDF_T)) {
-        // Check if IOR is connected.
-        ShaderInput *ior = node->getInput("ior");
-        ShaderOutput *source = ior ? ior->getConnection() : nullptr;
-        if (source) {
-          // Check if this is a graph interface connection.
-          if (source->getNode() == g) {
-            graphsWithIorDependency.insert(g);
-            source->setFlag(ShaderPortFlagMdl::TRANSMISSION_IOR_DEPENDENCY,
-                            true);
-            result = true;
-          } else if (source->getNode()->hasClassification(
-                         ShaderNode::Classification::CONSTANT)) {
-            // If the connection is to a constant node we can
-            // handled that here since it's just a uniform value.
-            ShaderInput *value =
-                source->getNode()->getInput(ValueElement::VALUE_ATTRIBUTE);
-            if (value && value->getValue()) {
-              ior->setValue(value->getValue());
+        else
+        {
+            // Check for transmission BSDF node.
+            if (node->hasClassification(ShaderNode::Classification::BSDF_T))
+            {
+                // Check if IOR is connected.
+                ShaderInput* ior = node->getInput("ior");
+                ShaderOutput* source = ior ? ior->getConnection() : nullptr;
+                if (source)
+                {
+                    // Check if this is a graph interface connection.
+                    if (source->getNode() == g)
+                    {
+                        graphsWithIorDependency.insert(g);
+                        source->setFlag(ShaderPortFlagMdl::TRANSMISSION_IOR_DEPENDENCY, true);
+                        result = true;
+                    }
+                    else if (source->getNode()->hasClassification(ShaderNode::Classification::CONSTANT))
+                    {
+                        // If the connection is to a constant node we can
+                        // handled that here since it's just a uniform value.
+                        ShaderInput* value = source->getNode()->getInput(ValueElement::VALUE_ATTRIBUTE);
+                        if (value && value->getValue())
+                        {
+                            ior->setValue(value->getValue());
+                        }
+                        ior->breakConnection();
+                    }
+                    else
+                    {
+                        // If we get here we have to assume this is a varying connection
+                        // and we can break it immediately here.
+                        ior->breakConnection();
+                    }
+                }
             }
-            ior->breakConnection();
-          } else {
-            // If we get here we have to assume this is a varying connection
-            // and we can break it immediately here.
-            ior->breakConnection();
-          }
         }
-      }
     }
-  }
-  return result;
+    return result;
 }
 
-// Disconnect any incomming connections to transmission IOR
+// Disconnect any incoming connections to transmission IOR
 // inside a graph.
-void disconnectTransmissionIor(ShaderGraph *g) {
-  for (ShaderNode *node : g->getNodes()) {
-    ShaderGraph *subgraph = node->getImplementation().getGraph();
-    if (subgraph &&
-        (subgraph->hasClassification(ShaderNode::Classification::SHADER) ||
-         subgraph->hasClassification(ShaderNode::Classification::CLOSURE))) {
-      disconnectTransmissionIor(subgraph);
-    } else if (node->hasClassification(ShaderNode::Classification::BSDF_T)) {
-      ShaderInput *ior = node->getInput("ior");
-      if (ior) {
-        ior->breakConnection();
-      }
+void disconnectTransmissionIor(ShaderGraph* g)
+{
+    for (ShaderNode* node : g->getNodes())
+    {
+        ShaderGraph* subgraph = node->getImplementation().getGraph();
+        if (subgraph && (subgraph->hasClassification(ShaderNode::Classification::SHADER) ||
+                         subgraph->hasClassification(ShaderNode::Classification::CLOSURE)))
+        {
+            disconnectTransmissionIor(subgraph);
+        }
+        else if (node->hasClassification(ShaderNode::Classification::BSDF_T))
+        {
+            ShaderInput* ior = node->getInput("ior");
+            if (ior)
+            {
+                ior->breakConnection();
+            }
+        }
     }
-  }
 }
 
 } // anonymous namespace
 
-ShaderPtr MdlShaderGenerator::createShader(const string &name,
-                                           ElementPtr element,
-                                           GenContext &context) const {
-  // Create the root shader graph
-  ShaderGraphPtr graph = ShaderGraph::create(nullptr, name, element, context);
-  ShaderPtr shader = std::make_shared<Shader>(name, graph);
+ShaderPtr MdlShaderGenerator::createShader(const string& name, ElementPtr element, GenContext& context) const
+{
+    // Create the root shader graph
+    ShaderGraphPtr graph = ShaderGraph::create(nullptr, name, element, context);
+    ShaderPtr shader = std::make_shared<Shader>(name, graph);
 
-  // Create our stage.
-  ShaderStagePtr stage = createStage(Stage::PIXEL, *shader);
-  VariableBlockPtr inputs = stage->createInputBlock(MDL::INPUTS);
-  VariableBlockPtr outputs = stage->createOutputBlock(MDL::OUTPUTS);
+    // Create our stage.
+    ShaderStagePtr stage = createStage(Stage::PIXEL, *shader);
+    VariableBlockPtr inputs = stage->createInputBlock(MDL::INPUTS);
+    VariableBlockPtr outputs = stage->createOutputBlock(MDL::OUTPUTS);
 
-  // Create shader variables for all nodes that need this.
-  createVariables(graph, context, *shader);
+    // Create shader variables for all nodes that need this.
+    createVariables(graph, context, *shader);
 
-  // Create inputs for the published graph interface.
-  for (ShaderGraphInputSocket *inputSocket : graph->getInputSockets()) {
-    // Only for inputs that are connected/used internally,
-    // and are editable by users.
-    if (inputSocket->getConnections().size() &&
-        graph->isEditable(*inputSocket)) {
-      inputs->add(inputSocket->getSelf());
-    }
-  }
+    // Create inputs for the published graph interface.
+    for (ShaderGraphInputSocket* inputSocket : graph->getInputSockets())
+    {
+        // Only for inputs that are connected/used internally,
+        // and are editable by users.
+        if (inputSocket->getConnections().size() && graph->isEditable(*inputSocket))
+        {
+            if (inputSocket->getType().getSemantic() == TypeDesc::SEMANTIC_SHADER ||
+                inputSocket->getType().getSemantic() == TypeDesc::SEMANTIC_CLOSURE ||
+                inputSocket->getType().getSemantic() == TypeDesc::SEMANTIC_MATERIAL)
+            {
+                continue;
+            }
 
-  // Create outputs from the graph interface.
-  for (ShaderGraphOutputSocket *outputSocket : graph->getOutputSockets()) {
-    outputs->add(outputSocket->getSelf());
-  }
-
-  // MDL does not allow varying data connected to transmission IOR.
-  // We must find all uses of transmission IOR and make sure we don't
-  // have a varying connection to it. If a varying connection is found
-  // we break that connection and revert to using default value on that
-  // instance of IOR, so that other uses of the same varying input still
-  // works in other places.
-  // As a result if a varying connections is set on transmission IOR
-  // it just reverts to default value. Varying data on transmission IOR
-  // is very rare so this is normally not a problem in practice.
-  // One use-case where this fix is important is for shading models with
-  // a single IOR input, that gets connected to both reflection and
-  // transmission IOR inside the shading model graph. For such cases
-  // this fix will disconnect the transmission IOR on the inside, but
-  // still support the connection to reflection IOR.
-  //
-  if (graph->hasClassification(ShaderNode::Classification::SHADER) ||
-      graph->hasClassification(ShaderNode::Classification::CLOSURE)) {
-    // Find dependencies on transmission IOR.
-    std::set<ShaderGraph *> graphsWithIorDependency;
-    std::set<ShaderGraph *> graphsWithIorVarying;
-    checkTransmissionIorDependencies(graph.get(), graphsWithIorDependency,
-                                     graphsWithIorVarying);
-
-    // For any graphs found that has a varying connection
-    // to transmission IOR we need to break that connection.
-    for (ShaderGraph *g : graphsWithIorVarying) {
-      disconnectTransmissionIor(g);
-      graphsWithIorDependency.erase(g);
-    }
-
-    // For graphs that has a dependency with transmission IOR on the inside,
-    // we can declare the corresponding inputs as being uniform and preserve
-    // the internal connection to transmssion IOR.
-    for (ShaderGraph *g : graphsWithIorDependency) {
-      for (ShaderOutput *socket : g->getInputSockets()) {
-        if (socket->getFlag(ShaderPortFlagMdl::TRANSMISSION_IOR_DEPENDENCY)) {
-          socket->setUniform();
+            inputs->add(inputSocket->getSelf());
         }
-      }
     }
-  }
 
-  return shader;
+    // Create outputs from the graph interface.
+    for (ShaderGraphOutputSocket* outputSocket : graph->getOutputSockets())
+    {
+        outputs->add(outputSocket->getSelf());
+    }
+
+    // MDL does not allow varying data connected to transmission IOR until MDL 1.9.
+    // We must find all uses of transmission IOR and make sure we don't
+    // have a varying connection to it. If a varying connection is found
+    // we break that connection and revert to using default value on that
+    // instance of IOR, so that other uses of the same varying input still
+    // works in other places.
+    // As a result if a varying connections is set on transmission IOR
+    // it just reverts to default value. Varying data on transmission IOR
+    // is very rare so this is normally not a problem in practice.
+    // One use-case where this fix is important is for shading models with
+    // a single IOR input, that gets connected to both reflection and
+    // transmission IOR inside the shading model graph. For such cases
+    // this fix will disconnect the transmission IOR on the inside, but
+    // still support the connection to reflection IOR.
+    //
+    GenMdlOptions::MdlVersion version = getMdlVersion(context);
+    bool uniformIorRequired =
+        version == GenMdlOptions::MdlVersion::MDL_1_6 ||
+        version == GenMdlOptions::MdlVersion::MDL_1_7 ||
+        version == GenMdlOptions::MdlVersion::MDL_1_8;
+    if (uniformIorRequired && (
+        graph->hasClassification(ShaderNode::Classification::SHADER) ||
+        graph->hasClassification(ShaderNode::Classification::CLOSURE)))
+    {
+        // Find dependencies on transmission IOR.
+        std::set<ShaderGraph*> graphsWithIorDependency;
+        std::set<ShaderGraph*> graphsWithIorVarying;
+        checkTransmissionIorDependencies(graph.get(), graphsWithIorDependency, graphsWithIorVarying);
+
+        // For any graphs found that has a varying connection
+        // to transmission IOR we need to break that connection.
+        for (ShaderGraph* g : graphsWithIorVarying)
+        {
+            disconnectTransmissionIor(g);
+            graphsWithIorDependency.erase(g);
+        }
+
+        // For graphs that has a dependency with transmission IOR on the inside,
+        // we can declare the corresponding inputs as being uniform and preserve
+        // the internal connection to transmission IOR.
+        for (ShaderGraph* g : graphsWithIorDependency)
+        {
+            for (ShaderOutput* socket : g->getInputSockets())
+            {
+                if (socket->getFlag(ShaderPortFlagMdl::TRANSMISSION_IOR_DEPENDENCY))
+                {
+                    socket->setUniform();
+                }
+            }
+        }
+    }
+
+    return shader;
 }
 
-void MdlShaderGenerator::emitShaderInputs(const VariableBlock &inputs,
-                                          ShaderStage &stage) const {
-  const string uniformPrefix = _syntax->getUniformQualifier() + " ";
-  for (size_t i = 0; i < inputs.size(); ++i) {
-    const ShaderPort *input = inputs[i];
+namespace
+{
 
-    const string &qualifier =
-        input->isUniform() || input->getType() == Type::FILENAME ? uniformPrefix
-                                                                 : EMPTY_STRING;
-    const string &type = _syntax->getTypeName(input->getType());
+void emitInputAnnotations(const MdlShaderGenerator& _this, ConstDocumentPtr doc, const ShaderPort* variable, ShaderStage& stage)
+{
+    // allows to relate between MaterialX and MDL parameters when looking at the MDL code.
+    const std::string mtlxParameterPathAnno = "materialx::core::origin(\"" + variable->getPath() + "\")";
 
-    string value =
-        input->getValue()
-            ? _syntax->getValue(input->getType(), *input->getValue(), true)
-            : EMPTY_STRING;
-    const string &geomprop = input->getGeomProp();
-    if (!geomprop.empty()) {
-      auto it = GEOMPROP_DEFINITIONS.find(geomprop);
-      if (it != GEOMPROP_DEFINITIONS.end()) {
-        value = it->second;
-      }
+    _this.emitLineEnd(stage, false);
+    _this.emitLine("[[", stage, false);
+    _this.emitLine("\t" + mtlxParameterPathAnno, stage, false);
+    _this.emitLineBegin(stage);
+    _this.emitString("]]", stage); // line ending follows by caller
+}
+
+} // anonymous namespace
+
+void MdlShaderGenerator::emitShaderInputs(ConstDocumentPtr doc, const VariableBlock& inputs, ShaderStage& stage) const
+{
+    const string uniformPrefix = _syntax->getUniformQualifier() + " ";
+    for (size_t i = 0; i < inputs.size(); ++i)
+    {
+        const ShaderPort* input = inputs[i];
+
+        const string& qualifier = input->isUniform() || input->getType() == Type::FILENAME ? uniformPrefix : EMPTY_STRING;
+        const string& type = _syntax->getTypeName(input->getType());
+
+        string value = input->getValue() ? _syntax->getValue(input->getType(), *input->getValue(), true) : EMPTY_STRING;
+        const string& geomprop = input->getGeomProp();
+        if (!geomprop.empty())
+        {
+            auto it = GEOMPROP_DEFINITIONS.find(geomprop);
+            if (it != GEOMPROP_DEFINITIONS.end())
+            {
+                value = it->second;
+            }
+        }
+        if (value.empty())
+        {
+            value = _syntax->getDefaultValue(input->getType(), true);
+        }
+
+        emitLineBegin(stage);
+        emitString(qualifier + type + " " + input->getVariable() + " = " + value, stage);
+        emitInputAnnotations(*this, doc, input, stage);
+
+        if (i < inputs.size() - 1)
+        {
+            emitString(",", stage);
+        }
+
+        emitLineEnd(stage, false);
     }
-    if (value.empty()) {
-      value = _syntax->getDefaultValue(input->getType(), true);
-    }
+}
+
+GenMdlOptions::MdlVersion MdlShaderGenerator::getMdlVersion(GenContext& context) const
+{
+    GenMdlOptionsPtr options = context.getUserData<GenMdlOptions>(GenMdlOptions::GEN_CONTEXT_USER_DATA_KEY);
+    return options ? options->targetVersion : GenMdlOptions::MdlVersion::MDL_LATEST;
+}
+
+void MdlShaderGenerator::emitMdlVersionNumber(GenContext& context, ShaderStage& stage) const
+{
+    GenMdlOptions::MdlVersion version = getMdlVersion(context);
 
     emitLineBegin(stage);
-    emitString(qualifier + type + " " + input->getVariable() + " = " + value,
-               stage);
-
-    if (i < inputs.size() - 1) {
-      emitString(",", stage);
+    emitString("mdl ", stage);
+    switch (version)
+    {
+        case GenMdlOptions::MdlVersion::MDL_1_6:
+            emitString(MDL_VERSION_1_6, stage);
+            break;
+        case GenMdlOptions::MdlVersion::MDL_1_7:
+            emitString(MDL_VERSION_1_7, stage);
+            break;
+        case GenMdlOptions::MdlVersion::MDL_1_8:
+            emitString(MDL_VERSION_1_8, stage);
+            break;
+        case GenMdlOptions::MdlVersion::MDL_1_9:
+            emitString(MDL_VERSION_1_9, stage);
+            break;
+        default:
+            // GenMdlOptions::MdlVersion::MDL_1_10
+            // GenMdlOptions::MdlVersion::MDL_LATEST
+            emitString(MDL_VERSION_1_10, stage);
+            break;
     }
-
-    emitLineEnd(stage, false);
-  }
+    emitLineEnd(stage, true);
 }
 
-namespace MDL {
+
+const string& MdlShaderGenerator::getMdlVersionFilenameSuffix(GenContext& context) const
+{
+    GenMdlOptions::MdlVersion version = getMdlVersion(context);
+
+    switch (version)
+    {
+        case GenMdlOptions::MdlVersion::MDL_1_6:
+            return MDL_VERSION_SUFFIX_1_6;
+        case GenMdlOptions::MdlVersion::MDL_1_7:
+            return MDL_VERSION_SUFFIX_1_7;
+        case GenMdlOptions::MdlVersion::MDL_1_8:
+            return MDL_VERSION_SUFFIX_1_8;
+        case GenMdlOptions::MdlVersion::MDL_1_9:
+            return MDL_VERSION_SUFFIX_1_9;
+        default:
+            // GenMdlOptions::MdlVersion::MDL_1_10
+            // GenMdlOptions::MdlVersion::MDL_LATEST
+            return MDL_VERSION_SUFFIX_1_10;
+    }
+}
+
+void MdlShaderGenerator::emitMdlVersionFilenameSuffix(GenContext& context, ShaderStage& stage) const
+{
+    emitString(getMdlVersionFilenameSuffix(context), stage);
+}
+
+namespace MDL
+{
 // Identifiers for MDL variable blocks
 const string INPUTS = "i";
 const string OUTPUTS = "o";

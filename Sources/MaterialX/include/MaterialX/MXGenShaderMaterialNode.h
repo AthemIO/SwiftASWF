@@ -8,18 +8,18 @@
 
 #include <MaterialX/MXGenShaderExport.h>
 
-#include <MaterialX/MXGenShaderNodeImpl.h>
+#include <MaterialX/MXGenShaderShaderNodeImpl.h>
 
 MATERIALX_NAMESPACE_BEGIN
 
 /// Material node implementation
-class MX_GENSHADER_API MaterialNode : public ShaderNodeImpl {
-public:
-  static ShaderNodeImplPtr create();
+class MX_GENSHADER_API MaterialNode : public ShaderNodeImpl
+{
+  public:
+    static ShaderNodeImplPtr create();
 
-  void addClassification(ShaderNode &node) const override;
-  void emitFunctionCall(const ShaderNode &node, GenContext &context,
-                        ShaderStage &stage) const override;
+    void addClassification(ShaderNode& node) const override;
+    void emitFunctionCall(const ShaderNode& node, GenContext& context, ShaderStage& stage) const override;
 };
 
 MATERIALX_NAMESPACE_END

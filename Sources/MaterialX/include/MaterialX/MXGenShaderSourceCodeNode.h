@@ -6,32 +6,33 @@
 #ifndef MATERIALX_SOURCECODENODE_H
 #define MATERIALX_SOURCECODENODE_H
 
-#include <MaterialX/MXGenShaderNodeImpl.h>
+#include <MaterialX/MXGenShaderShaderNodeImpl.h>
 
 #include <MaterialX/MXFormatFile.h>
 
 MATERIALX_NAMESPACE_BEGIN
 
 /// @class SourceCodeNode
-/// Implemention for a node using data-driven static source code.
+/// Implementation for a node using data-driven static source code.
 /// This is the default implementation used for all nodes that
 /// do not have a custom ShaderNodeImpl class.
-class MX_GENSHADER_API SourceCodeNode : public ShaderNodeImpl {
-public:
-  static ShaderNodeImplPtr create();
+class MX_GENSHADER_API SourceCodeNode : public ShaderNodeImpl
+{
+  public:
+    static ShaderNodeImplPtr create();
 
-  void initialize(const InterfaceElement &element,
-                  GenContext &context) override;
-  void emitFunctionDefinition(const ShaderNode &node, GenContext &context,
-                              ShaderStage &stage) const override;
-  void emitFunctionCall(const ShaderNode &node, GenContext &context,
-                        ShaderStage &stage) const override;
+    void initialize(const InterfaceElement& element, GenContext& context) override;
+    void emitFunctionDefinition(const ShaderNode& node, GenContext& context, ShaderStage& stage) const override;
+    void emitFunctionCall(const ShaderNode& node, GenContext& context, ShaderStage& stage) const override;
 
-protected:
-  bool _inlined;
-  string _functionName;
-  string _functionSource;
-  FilePath _sourceFilename;
+  protected:
+    /// Resolve the source file and read the source code during the initialization of the node.
+    virtual void resolveSourceCode(const InterfaceElement& element, GenContext& context);
+
+    bool _inlined;
+    string _functionName;
+    string _functionSource;
+    FilePath _sourceFilename;
 };
 
 MATERIALX_NAMESPACE_END

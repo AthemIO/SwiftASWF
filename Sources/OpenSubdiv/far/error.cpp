@@ -44,13 +44,18 @@ static WarningCallbackFunc warningFunc = 0;
 #pragma warning disable 1711
 #endif
 
-void SetErrorCallback(ErrorCallbackFunc func) { errorFunc = func; }
+void SetErrorCallback(ErrorCallbackFunc func) {
+    errorFunc = func;
+}
 
-void SetWarningCallback(WarningCallbackFunc func) { warningFunc = func; }
+void SetWarningCallback(WarningCallbackFunc func) {
+    warningFunc = func;
+}
 
 #ifdef __INTEL_COMPILER
 #pragma warning enable 1711
 #endif
+
 
 //
 //  The default error and warning callbacks eventually belong in the
@@ -58,41 +63,45 @@ void SetWarningCallback(WarningCallbackFunc func) { warningFunc = func; }
 //
 void Error(ErrorType err, const char *format, ...) {
 
-  static char const *errorTypeLabel[] = {"No Error", "Fatal Error",
-                                         "Coding Error (internal)",
-                                         "Coding Error", "Error"};
+    static char const * errorTypeLabel[] = {
+        "No Error",
+        "Fatal Error",
+        "Coding Error (internal)",
+        "Coding Error",
+        "Error"
+    };
 
-  assert(err != FAR_NO_ERROR);
+    assert(err!=FAR_NO_ERROR);
 
-  char message[10240];
-  va_list argptr;
-  va_start(argptr, format);
-  vsnprintf(message, 10240, format, argptr);
-  va_end(argptr);
+    char message[10240];
+    va_list argptr;
+    va_start(argptr, format);
+    vsnprintf(message, 10240, format, argptr);
+    va_end(argptr);
 
-  if (errorFunc) {
-    errorFunc(err, message);
-  } else {
-    printf("%s: %s\n", errorTypeLabel[err], message);
-  }
+    if (errorFunc) {
+        errorFunc(err, message);
+    } else {
+        printf("%s: %s\n", errorTypeLabel[err], message);
+    }
 }
 
 void Warning(const char *format, ...) {
 
-  char message[10240];
-  va_list argptr;
-  va_start(argptr, format);
-  vsnprintf(message, 10240, format, argptr);
-  va_end(argptr);
+    char message[10240];
+    va_list argptr;
+    va_start(argptr, format);
+    vsnprintf(message, 10240, format, argptr);
+    va_end(argptr);
 
-  if (warningFunc) {
-    warningFunc(message);
-  } else {
-    fprintf(stdout, "Warning: %s\n", message);
-  }
+    if (warningFunc) {
+        warningFunc(message);
+    } else {
+        fprintf(stdout, "Warning: %s\n", message);
+    }
 }
 
-} // namespace Far
+} // end namespace
 
 } // end namespace OPENSUBDIV_VERSION
 } // end namespace OpenSubdiv

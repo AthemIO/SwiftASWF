@@ -9,16 +9,17 @@
 /// @file
 /// ESSL syntax class
 
-#include <MaterialX/MXGenGlslSyntax.h>
+#include <MaterialX/MXGenGlslGlslSyntax.h>
 
 MATERIALX_NAMESPACE_BEGIN
 
 /// Syntax class for ESSL (OpenGL ES Shading Language)
-class MX_GENGLSL_API EsslSyntax : public GlslSyntax {
-public:
-  EsslSyntax();
+class MX_GENGLSL_API EsslSyntax : public GlslSyntax
+{
+  public:
+    EsslSyntax(TypeSystemPtr typeSystem);
 
-  static SyntaxPtr create() { return std::make_shared<EsslSyntax>(); }
+    static SyntaxPtr create(TypeSystemPtr typeSystem) { return std::make_shared<EsslSyntax>(typeSystem); }
 };
 
 MATERIALX_NAMESPACE_END

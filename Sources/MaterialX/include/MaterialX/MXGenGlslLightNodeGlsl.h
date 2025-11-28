@@ -6,25 +6,21 @@
 #ifndef MATERIALX_LIGHTNODEGLSL_H
 #define MATERIALX_LIGHTNODEGLSL_H
 
-#include <MaterialX/MXGenGlslShaderGenerator.h>
+#include <MaterialX/MXGenGlslGlslShaderGenerator.h>
 
 MATERIALX_NAMESPACE_BEGIN
 
 /// Light node implementation for GLSL
-class MX_GENGLSL_API LightNodeGlsl : public GlslImplementation {
-public:
-  LightNodeGlsl();
+class MX_GENGLSL_API LightNodeGlsl : public GlslImplementation
+{
+  public:
+    LightNodeGlsl();
 
-  static ShaderNodeImplPtr create();
+    static ShaderNodeImplPtr create();
 
-  void createVariables(const ShaderNode &node, GenContext &context,
-                       Shader &shader) const override;
+    void createVariables(const ShaderNode& node, GenContext& context, Shader& shader) const override;
 
-  void emitFunctionCall(const ShaderNode &node, GenContext &context,
-                        ShaderStage &stage) const override;
-
-private:
-  mutable ClosureContext _callEmission;
+    void emitFunctionCall(const ShaderNode& node, GenContext& context, ShaderStage& stage) const override;
 };
 
 MATERIALX_NAMESPACE_END

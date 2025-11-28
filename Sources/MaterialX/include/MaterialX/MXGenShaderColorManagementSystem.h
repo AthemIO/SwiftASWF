@@ -11,8 +11,8 @@
 
 #include <MaterialX/MXGenShaderExport.h>
 
-#include <MaterialX/MXGenShaderNode.h>
-#include <MaterialX/MXGenShaderNodeImpl.h>
+#include <MaterialX/MXGenShaderShaderNode.h>
+#include <MaterialX/MXGenShaderShaderNodeImpl.h>
 #include <MaterialX/MXGenShaderTypeDesc.h>
 
 #include <MaterialX/MXCoreDocument.h>
@@ -26,50 +26,53 @@ using ColorManagementSystemPtr = shared_ptr<class ColorManagementSystem>;
 
 /// @struct ColorSpaceTransform
 /// Structure that represents color space transform information
-struct MX_GENSHADER_API ColorSpaceTransform {
-  ColorSpaceTransform(const string &ss, const string &ts, const TypeDesc *t);
+struct MX_GENSHADER_API ColorSpaceTransform
+{
+    ColorSpaceTransform(const string& ss, const string& ts, TypeDesc t);
 
-  string sourceSpace;
-  string targetSpace;
-  const TypeDesc *type;
+    string sourceSpace;
+    string targetSpace;
+    TypeDesc type;
 
-  /// Comparison operator
-  bool operator==(const ColorSpaceTransform &other) const {
-    return sourceSpace == other.sourceSpace &&
-           targetSpace == other.targetSpace && type == other.type;
-  }
+    /// Comparison operator
+    bool operator==(const ColorSpaceTransform& other) const
+    {
+        return sourceSpace == other.sourceSpace &&
+               targetSpace == other.targetSpace &&
+               type == other.type;
+    }
 };
 
 /// @class ColorManagementSystem
 /// Abstract base class for color management systems
-class MX_GENSHADER_API ColorManagementSystem {
-public:
-  virtual ~ColorManagementSystem() {}
+class MX_GENSHADER_API ColorManagementSystem
+{
+  public:
+    virtual ~ColorManagementSystem() { }
 
-  /// Return the ColorManagementSystem name
-  virtual const string &getName() const = 0;
+    /// Return the ColorManagementSystem name
+    virtual const string& getName() const = 0;
 
-  /// Load a library of implementations from the provided document,
-  /// replacing any previously loaded content.
-  virtual void loadLibrary(DocumentPtr document);
+    /// Load a library of implementations from the provided document,
+    /// replacing any previously loaded content.
+    virtual void loadLibrary(DocumentPtr document);
 
-  /// Returns whether this color management system supports a provided transform
-  bool supportsTransform(const ColorSpaceTransform &transform) const;
+    /// Returns whether this color management system supports a provided transform
+    bool supportsTransform(const ColorSpaceTransform& transform) const;
 
-  /// Create a node to use to perform the given color space transformation.
-  ShaderNodePtr createNode(const ShaderGraph *parent,
-                           const ColorSpaceTransform &transform,
-                           const string &name, GenContext &context) const;
+    /// Create a node to use to perform the given color space transformation.
+    ShaderNodePtr createNode(const ShaderGraph* parent, const ColorSpaceTransform& transform, const string& name,
+                             GenContext& context) const;
 
-protected:
-  /// Protected constructor
-  ColorManagementSystem();
+  protected:
+    /// Protected constructor
+    ColorManagementSystem();
 
-  /// Returns a nodedef for a given transform
-  virtual NodeDefPtr getNodeDef(const ColorSpaceTransform &transform) const = 0;
+    /// Returns a nodedef for a given transform
+    virtual NodeDefPtr getNodeDef(const ColorSpaceTransform& transform) const = 0;
 
-protected:
-  DocumentPtr _document;
+  protected:
+    DocumentPtr _document;
 };
 
 MATERIALX_NAMESPACE_END

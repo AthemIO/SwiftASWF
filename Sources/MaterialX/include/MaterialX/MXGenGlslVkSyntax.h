@@ -9,18 +9,19 @@
 /// @file
 /// Vulkan GLSL syntax class
 
-#include <MaterialX/MXGenGlslSyntax.h>
+#include <MaterialX/MXGenGlslGlslSyntax.h>
 
 MATERIALX_NAMESPACE_BEGIN
 
 /// Syntax class for Vulkan GLSL
-class MX_GENGLSL_API VkSyntax : public GlslSyntax {
-public:
-  VkSyntax();
+class MX_GENGLSL_API VkSyntax : public GlslSyntax
+{
+  public:
+    VkSyntax(TypeSystemPtr typeSystem);
 
-  static SyntaxPtr create() { return std::make_shared<VkSyntax>(); }
+    static SyntaxPtr create(TypeSystemPtr typeSystem) { return std::make_shared<VkSyntax>(typeSystem); }
 
-  const string &getInputQualifier() const override { return INPUT_QUALIFIER; }
+    const string& getInputQualifier() const override { return INPUT_QUALIFIER; }
 };
 
 MATERIALX_NAMESPACE_END

@@ -6,32 +6,30 @@
 #ifndef MATERIALX_LIGHTSHADERNODEMSL_H
 #define MATERIALX_LIGHTSHADERNODEMSL_H
 
-#include <MaterialX/MXGenMslShaderGenerator.h>
-#include <MaterialX/MXGenShaderSourceCodeNode.h>
+#include <MaterialX/MXGenMslMslShaderGenerator.h>
+#include <MaterialX/MXGenShaderNodes/SourceCodeNode.h>
 
 MATERIALX_NAMESPACE_BEGIN
 
 /// LightShader node implementation for MSL
 /// Used for all light shaders implemented in source code.
-class MX_GENMSL_API LightShaderNodeMsl : public SourceCodeNode {
-public:
-  LightShaderNodeMsl();
+class MX_GENMSL_API LightShaderNodeMsl : public SourceCodeNode
+{
+  public:
+    LightShaderNodeMsl();
 
-  static ShaderNodeImplPtr create();
+    static ShaderNodeImplPtr create();
 
-  const string &getTarget() const override;
+    const string& getTarget() const override;
 
-  void initialize(const InterfaceElement &element,
-                  GenContext &context) override;
+    void initialize(const InterfaceElement& element, GenContext& context) override;
 
-  void createVariables(const ShaderNode &node, GenContext &context,
-                       Shader &shader) const override;
+    void createVariables(const ShaderNode& node, GenContext& context, Shader& shader) const override;
 
-  void emitFunctionCall(const ShaderNode &node, GenContext &context,
-                        ShaderStage &stage) const override;
+    void emitFunctionCall(const ShaderNode& node, GenContext& context, ShaderStage& stage) const override;
 
-protected:
-  VariableBlock _lightUniforms;
+  protected:
+    VariableBlock _lightUniforms;
 };
 
 MATERIALX_NAMESPACE_END

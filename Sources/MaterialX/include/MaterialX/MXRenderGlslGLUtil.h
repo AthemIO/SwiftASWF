@@ -15,7 +15,7 @@
 
 MATERIALX_NAMESPACE_BEGIN
 
-MX_RENDERGLSL_API void checkGlErrors(const string &context);
+MX_RENDERGLSL_API void checkGlErrors(const string& context);
 
 MATERIALX_NAMESPACE_END
 

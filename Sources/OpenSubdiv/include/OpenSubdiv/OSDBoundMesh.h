@@ -40,12 +40,12 @@
 #include <set>
 #include <vector>
 
-#include "../OpenSubdiv/OSDBoundAllocator.h"
-#include "../OpenSubdiv/OSDBoundCreaseEdit.h"
-#include "../OpenSubdiv/OSDBoundFace.h"
-#include "../OpenSubdiv/OSDBoundHierarchicalEdit.h"
-#include "../OpenSubdiv/OSDBoundVertex.h"
-#include "../OpenSubdiv/OSDBoundVertexEdit.h"
+#include "OpenSubdiv/OSDBoundAllocator.h"
+#include "OpenSubdiv/OSDBoundCreaseEdit.h"
+#include "OpenSubdiv/OSDBoundFace.h"
+#include "OpenSubdiv/OSDBoundHierarchicalEdit.h"
+#include "OpenSubdiv/OSDBoundVertex.h"
+#include "OpenSubdiv/OSDBoundVertexEdit.h"
 
 #include "OpenSubdiv/OSDVersion.h"
 
@@ -459,8 +459,8 @@ using namespace OPENSUBDIV_VERSION;
 
 } // end namespace OpenSubdiv
 
-#include "../OpenSubdiv/OSDBoundHalfEdge.h"
-#include "../OpenSubdiv/OSDBoundMesh.h"
+#include "OpenSubdiv/OSDBoundHalfEdge.h"
+#include "OpenSubdiv/OSDBoundMesh.h"
 #include <algorithm>
 
 namespace OpenSubdiv {
