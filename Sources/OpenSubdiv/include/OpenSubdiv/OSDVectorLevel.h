@@ -274,6 +274,7 @@ public:
 
   void setVertexNonManifold(Index vertIndex, bool b);
   bool isVertexNonManifold(Index vertIndex) const;
+  bool testVertexNonManifoldCrease(Index vIndex) const;
 
   //  General access to all component tags:
   VTag const &getVertexTag(Index vertIndex) const {

@@ -1027,14 +1027,17 @@ func getConfig(for target: PkgTarget) -> TargetInfo
         "osd/CudaKernel.cu",
         "osd/CudaPatchTable.cpp",
         "osd/CudaVertexBuffer.cpp",
+        /* Shader/compute sources require generated headers that aren't present */
+        "osd/hlslPatchShaderSource.cpp",
+        "osd/GLSLPatchShaderSource.cpp",
+        "osd/MTLPatchShaderSource.mm",
+        "osd/MTLComputeEvaluator.mm",
       ]
       #if !os(macOS) && !os(visionOS) && !os(iOS) && !os(tvOS) && !os(watchOS)
-        /* metal is only for darwin. */
+        /* metal is only for darwin (excluding already-excluded compute evaluator). */
         config.exclude += [
-          "osd/MTLComputeEvaluator.mm",
           "osd/MTLLegacyGregoryPatchTable.mm",
           "osd/MTLMesh.mm",
-          "osd/MTLPatchShaderSource.mm",
           "osd/MTLPatchTable.mm",
           "osd/MTLVertexBuffer.mm",
         ]

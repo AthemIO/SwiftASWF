@@ -828,7 +828,7 @@ SurfaceFactory::assignIrregularSurface(SurfaceType * surfacePtr,
     //
     internal::IrregularPatchSharedPtr patch(0);
 
-    if ((_topologyCache == 0) || builder.ControlHullDependsOnMeshIndices()) {
+    if ((_topologyCache == 0) || builder.controlFacesMayOverlap()) {
         patch = builder.Build();
     } else {
         //

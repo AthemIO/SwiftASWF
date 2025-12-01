@@ -27,7 +27,7 @@
 // functions used in USD (pxr/base/arch/hash.*) under similar conditions.
 //
 
-#include "hash.h"
+#include "OpenSubdiv/bfr/hash.h"
 
 //
 // SpookyHash: a 128-bit noncryptographic hash function

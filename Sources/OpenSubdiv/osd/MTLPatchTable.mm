@@ -22,10 +22,10 @@
 //   language governing permissions and limitations under the Apache License.
 //
 
-#import "../osd/mtlPatchTable.h"
+#import "OpenSubdiv/osd/mtlPatchTable.h"
 #import <Metal/Metal.h>
-#import "../far/patchTable.h"
-#import "../osd/cpuPatchTable.h"
+#import "OpenSubdiv/far/patchTable.h"
+#import "OpenSubdiv/osd/cpuPatchTable.h"
 
 namespace OpenSubdiv {
 namespace OPENSUBDIV_VERSION {

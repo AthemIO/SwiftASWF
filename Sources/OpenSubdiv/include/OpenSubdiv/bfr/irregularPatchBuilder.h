@@ -139,9 +139,11 @@ private:
   int getLocalControlVertex(Index meshVertexIndex) const;
   Index getMeshControlVertex(int localVertexIndex) const;
 
+public:
   //  Methods for dealing with potentially overlapping faces:
   bool controlFacesMayOverlap() const { return _controlFacesOverlap; }
 
+private:
   void removeDuplicateControlFaces(int faceSizes[], int faceVerts[],
                                    int *numFaces, int *numFaceVerts) const;
   void sharpenBoundaryControlEdges(int edgeIndices[], float edgeSharpness[],
