@@ -1,1 +1,0 @@
-../MaterialX/MXGenShaderHwImageNode.h

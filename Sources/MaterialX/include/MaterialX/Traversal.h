@@ -1,1 +1,0 @@
-../MaterialX/MXCoreTraversal.h

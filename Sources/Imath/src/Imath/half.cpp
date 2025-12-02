@@ -38,7 +38,7 @@ using namespace std;
 // defined. Half-to-float conversion must be accomplished either by
 // F16C instructions or the bit-shift algorithm.
 const imath_half_uif_t imath_half_to_float_table_data[1 << 16] =
-#include "toFloat.h"
+#include "toFloat.inc"
 
 extern "C" {
 EXPORT_CONST const imath_half_uif_t *imath_half_to_float_table = imath_half_to_float_table_data;

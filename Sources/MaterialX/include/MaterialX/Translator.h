@@ -1,1 +1,0 @@
-../MaterialX/MXGenShaderTranslator.h

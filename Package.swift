@@ -343,39 +343,6 @@ let package = Package(
     ),
 
     .target(
-      name: "MaterialX",
-      dependencies: [
-        .target(name: "Apple", condition: .when(platforms: Arch.OS.apple.platform)),
-        .target(name: "ImGui"),
-        .target(name: "OpenImageIO"),
-        .target(name: "OpenImageIO_Util"),
-        .target(name: "MXResources"),
-        .target(name: "MicrosoftSTL", condition: .when(platforms: [.windows])),
-      ],
-      exclude: getConfig(for: .materialx).exclude,
-      publicHeadersPath: "include",
-      cxxSettings: [
-        .define("GL_SILENCE_DEPRECATION", to: "1"),
-        .define("_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH", .when(platforms: [.windows])),
-        .define("_ALLOW_KEYWORD_MACROS", to: "1", .when(platforms: [.windows])),
-        .define("static_assert(_conditional, ...)", to: "", .when(platforms: [.windows])),
-      ]
-    ),
-
-    .executableTarget(
-      name: "MXGraphEditor",
-      dependencies: [
-        .target(name: "MaterialX"),
-      ],
-      exclude: getConfig(for: .mxGraphEditor).exclude,
-      cxxSettings: [
-        .define("_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH", .when(platforms: [.windows])),
-        .define("_ALLOW_KEYWORD_MACROS", to: "1", .when(platforms: [.windows])),
-        .define("static_assert(_conditional, ...)", to: "", .when(platforms: [.windows])),
-      ]
-    ),
-
-    .target(
       name: "OpenSubdiv",
       dependencies: [
         .target(name: "MetaTBB"),
@@ -417,6 +384,9 @@ let package = Package(
         "ImathTest",
         "Imath/CMakeLists.txt",
         "CMakeLists.txt",
+        /* toFloat.cpp is a utility program that generates lookup tables - has main() */
+        "Imath/toFloat.cpp",
+        "toFloat.cpp",
       ],
       publicHeadersPath: "Imath",
       cxxSettings: [
@@ -718,7 +688,6 @@ let package = Package(
         .target(name: "OpenColorIO"),
         .target(name: "OpenImageIO"),
         // .target(name: "OpenTimelineIO"),  // Temporarily disabled
-        .target(name: "MaterialX"),
         .target(name: "OpenVDB"),
         .target(name: "OpenSubdiv"),
         .target(name: "Ptex"),
@@ -985,26 +954,8 @@ func getConfig(for target: PkgTarget) -> TargetInfo
           "backends/ImplMacOS.mm",
         ]
       #endif /* !os(macOS) && !os(visionOS) && !os(iOS) && !os(tvOS) && !os(watchOS) */
-    case .mxGraphEditor:
-      #if !os(macOS) && !os(visionOS) && !os(iOS) && !os(tvOS) && !os(watchOS)
-        config.exclude = [
-          // no objc
-          "FileDialog.mm",
-        ]
-      #endif /* !os(macOS) && !os(visionOS) && !os(iOS) && !os(tvOS) && !os(watchOS) */
     case .mxResources:
       break
-    case .materialx:
-      config.exclude = [
-        "source/JsMaterialX",
-        "source/MaterialXView",
-      ]
-      #if !os(macOS) && !os(visionOS) && !os(iOS) && !os(tvOS) && !os(watchOS)
-        /* no metal on linux or windows or wasm */
-        config.exclude += [
-          "source/MaterialXRenderMsl",
-        ]
-      #endif /* !os(macOS) && !os(visionOS) && !os(iOS) && !os(tvOS) && !os(watchOS) */
     case .osd:
       config.exclude = [
         /* disabled for now */
@@ -1027,10 +978,9 @@ func getConfig(for target: PkgTarget) -> TargetInfo
         "osd/CudaKernel.cu",
         "osd/CudaPatchTable.cpp",
         "osd/CudaVertexBuffer.cpp",
-        /* Shader/compute sources require generated headers that aren't present */
+        /* HLSL only needed for Windows D3D, which isn't supported */
         "osd/hlslPatchShaderSource.cpp",
-        "osd/GLSLPatchShaderSource.cpp",
-        "osd/MTLPatchShaderSource.mm",
+        /* Metal compute evaluator needs additional setup */
         "osd/MTLComputeEvaluator.mm",
       ]
       #if !os(macOS) && !os(visionOS) && !os(iOS) && !os(tvOS) && !os(watchOS)
@@ -1044,6 +994,8 @@ func getConfig(for target: PkgTarget) -> TargetInfo
       #endif /* !os(macOS) && !os(visionOS) && !os(iOS) && !os(tvOS) && !os(watchOS) */
       config.cxxSettings = [
         .headerSearchPath("glLoader"),
+        /* The osd directory contains .gen.h files generated from shader sources */
+        .headerSearchPath("osd"),
         .define("_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH", .when(platforms: [.windows])),
         .define("_ALLOW_KEYWORD_MACROS", to: "1", .when(platforms: [.windows])),
         .define("static_assert(_conditional, ...)", to: "", .when(platforms: [.windows])),
@@ -1210,10 +1162,6 @@ func getConfig(for target: PkgTarget) -> TargetInfo
           targets: ["ImGui"]
         ),
         .library(
-          name: "MaterialX",
-          targets: ["MaterialX"]
-        ),
-        .library(
           name: "TurboJPEG",
           targets: ["TurboJPEG"]
         ),
@@ -1264,10 +1212,6 @@ func getConfig(for target: PkgTarget) -> TargetInfo
         .library(
           name: "MXResources",
           targets: ["MXResources"]
-        ),
-        .executable(
-          name: "MXGraphEditor",
-          targets: ["MXGraphEditor"]
         ),
         .executable(
           name: "MetaversalDemo",
@@ -1583,9 +1527,7 @@ enum PkgTarget: String
   case imgui = "ImGui"
   case pystring
   case imath = "Imath"
-  case mxGraphEditor = "MXGraphEditor"
   case mxResources = "MXResources"
-  case materialx = "MaterialX"
   case osd = "OpenSubdiv"
   case exr = "OpenEXR"
   case oiio = "OpenImageIO"

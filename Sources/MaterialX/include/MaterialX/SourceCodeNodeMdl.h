@@ -1,1 +1,0 @@
-../MaterialX/MXGenMdlSourceCodeNodeMdl.h
