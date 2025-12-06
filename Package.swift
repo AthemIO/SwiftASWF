@@ -1,12 +1,8 @@
-// swift-tools-version: 5.10
+// swift-tools-version: 6.1
 import PackageDescription
 
-/* ------------------------------------------------------
- *  :: :  💫 The Open Source Metaverse  :   ::
- * ------------------------------------------------------ */
-
 let package = Package(
-  name: "MetaverseKit",
+  name: "SwiftASWF",
   platforms: [
     .macOS(.v14),
     .visionOS(.v1),
@@ -30,7 +26,7 @@ let package = Package(
     .target(
       name: "Draco",
       dependencies: [
-        .target(name: "Eigen"),
+        .target(name: "Eigen")
       ],
       publicHeadersPath: "include",
       cxxSettings: [
@@ -43,14 +39,14 @@ let package = Package(
     .target(
       name: "TBBMallocProxy",
       dependencies: [
-        .target(name: "OneTBB"),
+        .target(name: "OneTBB")
       ],
       cxxSettings: [
         .define("_XOPEN_SOURCE", to: "1", .when(platforms: Arch.OS.apple.platform)),
         .define("_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH", .when(platforms: [.windows])),
         .define("_ALLOW_KEYWORD_MACROS", to: "1", .when(platforms: [.windows])),
         .define("static_assert(_conditional, ...)", to: "", .when(platforms: [.windows])),
-        .define("TBBPROXY_NO_DLLMAIN")
+        .define("TBBPROXY_NO_DLLMAIN"),
       ]
     ),
 
@@ -67,24 +63,26 @@ let package = Package(
         .define("_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH", .when(platforms: [.windows])),
         .define("_ALLOW_KEYWORD_MACROS", to: "1", .when(platforms: [.windows])),
         .define("static_assert(_conditional, ...)", to: "", .when(platforms: [.windows])),
-        .define("TBBMALLOC_NO_DLLMAIN")
+        .define("TBBMALLOC_NO_DLLMAIN"),
       ]
     ),
 
     .target(
       name: "OneTBB",
       dependencies: [
-        .target(name: "MicrosoftSTL", condition: .when(platforms: Arch.OS.windows.platform)),
+        .target(name: "MicrosoftSTL", condition: .when(platforms: Arch.OS.windows.platform))
       ],
       cxxSettings: [
         .define("_XOPEN_SOURCE", to: "1", .when(platforms: Arch.OS.apple.platform)),
-        .define("TBB_ALLOCATOR_TRAITS_BROKEN", to: "1", .when(platforms: Arch.OS.linux.platform)),
+        .define(
+          "TBB_ALLOCATOR_TRAITS_BROKEN", to: "1", .when(platforms: Arch.OS.linux.platform)
+        ),
         .define("_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH", .when(platforms: [.windows])),
         .define("_ALLOW_KEYWORD_MACROS", to: "1", .when(platforms: [.windows])),
         .define("static_assert(_conditional, ...)", to: "", .when(platforms: [.windows])),
         .define("__TBB_BUILD"),
         .define("__TBB_NO_IMPLICIT_LINKAGE", to: "1", .when(platforms: [.windows])),
-        .define("TBB_NO_LIB_LINKAGE")
+        .define("TBB_NO_LIB_LINKAGE"),
       ]
     ),
 
@@ -98,7 +96,9 @@ let package = Package(
       publicHeadersPath: "include",
       cxxSettings: [
         .define("_XOPEN_SOURCE", to: "1", .when(platforms: Arch.OS.apple.platform)),
-        .define("TBB_ALLOCATOR_TRAITS_BROKEN", to: "1", .when(platforms: Arch.OS.linux.platform)),
+        .define(
+          "TBB_ALLOCATOR_TRAITS_BROKEN", to: "1", .when(platforms: Arch.OS.linux.platform)
+        ),
         .define("_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH", .when(platforms: [.windows])),
         .define("_ALLOW_KEYWORD_MACROS", to: "1", .when(platforms: [.windows])),
         .define("static_assert(_conditional, ...)", to: "", .when(platforms: [.windows])),
@@ -114,7 +114,9 @@ let package = Package(
         .target(name: "OneTBB"),
         .target(name: "TBBMalloc"),
         .target(name: "TBBMallocProxy"),
-        .target(name: "tbb", condition: .when(platforms: Arch.OS.applewindowsdroid.platform)),
+        .target(
+          name: "tbb", condition: .when(platforms: Arch.OS.applewindowsdroid.platform)
+        ),
       ],
       exclude: [],
       cxxSettings: [
@@ -125,7 +127,7 @@ let package = Package(
         .define("static_assert(_conditional, ...)", to: "", .when(platforms: [.windows])),
       ],
       swiftSettings: [
-        .interoperabilityMode(.Cxx),
+        .interoperabilityMode(.Cxx)
       ]
     ),
 
@@ -156,7 +158,7 @@ let package = Package(
         .define("_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH", .when(platforms: [.windows])),
         .define("_ALLOW_KEYWORD_MACROS", to: "1", .when(platforms: [.windows])),
         .define("static_assert(_conditional, ...)", to: "", .when(platforms: [.windows])),
-        .define("yaml_cpp_EXPORTS", .when(platforms: [.windows]))
+        .define("yaml_cpp_EXPORTS", .when(platforms: [.windows])),
       ]
     ),
 
@@ -236,7 +238,7 @@ let package = Package(
     .target(
       name: "OpenMP",
       dependencies: [
-        .target(name: "MicrosoftSTL", condition: .when(platforms: [.windows])),
+        .target(name: "MicrosoftSTL", condition: .when(platforms: [.windows]))
       ],
       exclude: getConfig(for: .openmp).exclude,
       publicHeadersPath: "include",
@@ -246,7 +248,7 @@ let package = Package(
         .define("_ALLOW_KEYWORD_MACROS", to: "1", .when(platforms: [.windows])),
         .define("static_assert(_conditional, ...)", to: "", .when(platforms: [.windows])),
         // 'RTLD_NEXT' is not a symbol on Windows.
-        .define("RTLD_NEXT", to: "", .when(platforms: [.windows]))
+        .define("RTLD_NEXT", to: "", .when(platforms: [.windows])),
       ]
     ),
 
@@ -296,7 +298,7 @@ let package = Package(
     .target(
       name: "ImGui",
       dependencies: [
-        .target(name: "GLFW"),
+        .target(name: "GLFW")
       ],
       exclude: getConfig(for: .imgui).exclude,
       publicHeadersPath: "include",
@@ -319,11 +321,11 @@ let package = Package(
     .target(
       name: "MXResources",
       exclude: [
-        // todo: fix metal shader compilation.
+        // TODO: fix metal shader compilation.
         "libraries"
       ],
       resources: [
-        // todo: fix metal shader compilation.
+        // TODO: fix metal shader compilation.
         // .copy("libraries"),
         .copy("Resources/Geometry"),
         .copy("Resources/Images"),
@@ -338,7 +340,7 @@ let package = Package(
         .define("static_assert(_conditional, ...)", to: "", .when(platforms: [.windows])),
       ],
       swiftSettings: [
-        .interoperabilityMode(.Cxx),
+        .interoperabilityMode(.Cxx)
       ]
     ),
 
@@ -471,7 +473,9 @@ let package = Package(
       name: "OpenEXR",
       dependencies: [
         .target(name: "Imath"),
-        .target(name: "DEFLATE", condition: .when(platforms: Arch.OS.applewindowsdroid.platform)),
+        .target(
+          name: "DEFLATE", condition: .when(platforms: Arch.OS.applewindowsdroid.platform)
+        ),
       ],
       publicHeadersPath: "include",
       cxxSettings: [
@@ -483,14 +487,14 @@ let package = Package(
         .define("static_assert(_conditional, ...)", to: "", .when(platforms: [.windows])),
       ],
       linkerSettings: [
-        .linkedLibrary("deflate", .when(platforms: Arch.OS.linux.platform)),
+        .linkedLibrary("deflate", .when(platforms: Arch.OS.linux.platform))
       ]
     ),
 
     .target(
       name: "OpenImageIO_Util",
       dependencies: [
-        .target(name: "OpenImageIO"),
+        .target(name: "OpenImageIO")
       ],
       exclude: getConfig(for: .oiioUtil).exclude,
       publicHeadersPath: "include",
@@ -512,7 +516,9 @@ let package = Package(
         .target(name: "OpenVDB"),
         .target(name: "Imath"),
         .target(name: "OpenEXR"),
-        .target(name: "MicrosoftSTL", condition: .when(platforms: Arch.OS.windows.platform)),
+        .target(
+          name: "MicrosoftSTL", condition: .when(platforms: Arch.OS.windows.platform)
+        ),
         .product(name: "WebP", package: "libwebp"),
         .product(name: "LibPNG", package: "libpng"),
       ],
@@ -537,7 +543,7 @@ let package = Package(
         .define("_ALLOW_KEYWORD_MACROS", to: "1", .when(platforms: [.windows])),
         .define("static_assert(_conditional, ...)", to: "", .when(platforms: [.windows])),
         .define("FMT_LIB_EXPORT"),
-        .define("FMT_HEADER_ONLY")
+        .define("FMT_HEADER_ONLY"),
       ],
       linkerSettings: getConfig(for: .oiio).linkerSettings
     ),
@@ -565,17 +571,17 @@ let package = Package(
         .define("OpenColorIO_EXPORTS", .when(platforms: [.windows])),
       ],
       linkerSettings: [
-        .linkedLibrary("expat", .when(platforms: Arch.OS.nixnodroid.platform)),
+        .linkedLibrary("expat", .when(platforms: Arch.OS.nixnodroid.platform))
       ]
     ),
 
     .target(
       name: "OCIOBundle",
       dependencies: [
-        .target(name: "OpenColorIO"),
+        .target(name: "OpenColorIO")
       ],
       resources: [
-        .copy("Resources/colormanagement"),
+        .copy("Resources/colormanagement")
       ],
       cxxSettings: [
         .define("_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH", .when(platforms: [.windows])),
@@ -583,14 +589,14 @@ let package = Package(
         .define("static_assert(_conditional, ...)", to: "", .when(platforms: [.windows])),
       ],
       swiftSettings: [
-        .interoperabilityMode(.Cxx),
+        .interoperabilityMode(.Cxx)
       ]
     ),
 
     .target(
       name: "Ptex",
       dependencies: [
-        .product(name: "ZLib", package: "zlib"),
+        .product(name: "ZLib", package: "zlib")
       ],
       publicHeadersPath: "include",
       cxxSettings: [
@@ -605,7 +611,7 @@ let package = Package(
     .target(
       name: "HDF5",
       dependencies: [
-        .product(name: "ZLib", package: "zlib"),
+        .product(name: "ZLib", package: "zlib")
       ],
       publicHeadersPath: "include",
       cSettings: [
@@ -628,7 +634,7 @@ let package = Package(
       dependencies: [
         .target(name: "HDF5"),
         .target(name: "Imath"),
-        .target(name: "OpenEXR")
+        .target(name: "OpenEXR"),
       ],
       publicHeadersPath: "include",
       cxxSettings: [
@@ -654,7 +660,7 @@ let package = Package(
         .define("static_assert(_conditional, ...)", to: "", .when(platforms: [.windows])),
       ],
       linkerSettings: [
-        .linkedLibrary("pthread", .when(platforms: Arch.OS.linux.platform)),
+        .linkedLibrary("pthread", .when(platforms: Arch.OS.linux.platform))
       ]
     ),
 
@@ -673,7 +679,7 @@ let package = Package(
       linkerSettings: getConfig(for: .openvdb).linkerSettings
     ),
 
-    /* 
+    /*
       * Run this from the command line via:
       *
       * swift bundler run -p macOS MetaversalDemo */
@@ -700,12 +706,12 @@ let package = Package(
         .define("static_assert(_conditional, ...)", to: "", .when(platforms: [.windows])),
       ],
       swiftSettings: [
-        .interoperabilityMode(.Cxx),
+        .interoperabilityMode(.Cxx)
       ]
     ),
 
     .testTarget(
-      name: "MetaverseKitTests",
+      name: "SwiftASWFTests",
       dependencies: getConfig(for: .all).dependencies,
       cxxSettings: [
         .define("_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH", .when(platforms: [.windows])),
@@ -713,7 +719,7 @@ let package = Package(
         .define("static_assert(_conditional, ...)", to: "", .when(platforms: [.windows])),
       ],
       swiftSettings: [
-        .interoperabilityMode(.Cxx),
+        .interoperabilityMode(.Cxx)
       ]
     ),
   ] + Arch.OS.targets(),
@@ -786,7 +792,7 @@ func getConfig(for target: PkgTarget) -> TargetInfo
           "mz_strm_os_posix.c",
           "mz_os_posix.c",
           "mz_strm_bzip.c",
-          "mz_crypt_winvista.c"
+          "mz_crypt_winvista.c",
         ]
       #endif /* os(Windows) */
       #if !os(macOS) && !os(visionOS) && !os(iOS) && !os(tvOS) && !os(watchOS)
@@ -831,7 +837,7 @@ func getConfig(for target: PkgTarget) -> TargetInfo
         config.exclude += [
           "runtime/z_Linux_util.cpp",
           "runtime/z_Linux_asm.S",
-          "runtime/kmp_gsupport.cpp"
+          "runtime/kmp_gsupport.cpp",
         ]
       #endif /* os(Windows) */
     case .glfw:
@@ -893,7 +899,7 @@ func getConfig(for target: PkgTarget) -> TargetInfo
       ]
       #if os(Windows)
         config.linkerSettings = [
-          .linkedLibrary("opengl32", .when(platforms: [.windows])),
+          .linkedLibrary("opengl32", .when(platforms: [.windows]))
         ]
       #endif // os(Windows)
       #if os(Linux) || os(OpenBSD) || os(FreeBSD)
@@ -943,7 +949,7 @@ func getConfig(for target: PkgTarget) -> TargetInfo
       #if !os(Windows)
         config.exclude += [
           // no win32
-          "backends/ImplWin32.cpp",
+          "backends/ImplWin32.cpp"
         ]
       #endif /* !os(Windows) */
       #if !os(macOS) && !os(visionOS) && !os(iOS) && !os(tvOS) && !os(watchOS)
@@ -1025,12 +1031,12 @@ func getConfig(for target: PkgTarget) -> TargetInfo
     case .ocio:
       #if !os(macOS) && !os(visionOS) && !os(iOS) && !os(tvOS) && !os(watchOS)
         config.exclude = [
-          "SystemMonitor_macos.cpp",
+          "SystemMonitor_macos.cpp"
         ]
       #endif /* !os(macOS) && !os(visionOS) && !os(iOS) && !os(tvOS) && !os(watchOS) */
       #if !os(Windows)
         config.exclude += [
-          "SystemMonitor_windows.cpp",
+          "SystemMonitor_windows.cpp"
         ]
       #endif /* !os(Windows) */
     // case .mpy:
@@ -1071,7 +1077,7 @@ func getConfig(for target: PkgTarget) -> TargetInfo
         .define("_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH", .when(platforms: [.windows])),
         .define("_ALLOW_KEYWORD_MACROS", to: "1", .when(platforms: [.windows])),
         .define("static_assert(_conditional, ...)", to: "", .when(platforms: [.windows])),
-        .define("OPENVDB_PRIVATE")
+        .define("OPENVDB_PRIVATE"),
       ]
     case .demo:
       break
@@ -1234,7 +1240,7 @@ func getConfig(for target: PkgTarget) -> TargetInfo
   return config
 }
 
-/** Platforms, grouped by OS. */
+/// Platforms, grouped by OS.
 enum Arch
 {
   static let hostTriplet: String = "\(cpuArch)-\(host)-\(device)"
@@ -1260,7 +1266,7 @@ enum Arch
     /// everything not android (all - android).
     case nodroid
 
-    public var platform: [Platform]
+    var platform: [Platform]
     {
       switch self
       {
@@ -1276,11 +1282,13 @@ enum Arch
       }
     }
 
-    public static func packageDeps() -> [Package.Dependency]
+    static func packageDeps() -> [Package.Dependency]
     {
       #if os(macOS) || os(visionOS) || os(iOS) || os(tvOS) || os(watchOS)
         [
-          .package(url: "https://github.com/wabiverse/MetaverseVulkanFramework", from: "1.26.2"),
+          .package(
+            url: "https://github.com/wabiverse/MetaverseVulkanFramework", from: "1.26.2"
+          ),
           .package(url: "https://github.com/the-swift-collective/libwebp", from: "1.4.1"),
           .package(url: "https://github.com/the-swift-collective/zlib", from: "1.3.1"),
           .package(url: "https://github.com/the-swift-collective/libpng", from: "1.6.45"),
@@ -1294,7 +1302,7 @@ enum Arch
       #endif
     }
 
-    public static func targets() -> [Target]
+    static func targets() -> [Target]
     {
       #if os(macOS) || os(visionOS) || os(iOS) || os(tvOS) || os(watchOS)
         var targs: [Target] = []
@@ -1327,11 +1335,11 @@ enum Arch
       return targs
     }
 
-    public static func products() -> [Product]
+    static func products() -> [Product]
     {
       #if os(macOS) || os(visionOS) || os(iOS) || os(tvOS) || os(watchOS)
         var prods: [Product] = [
-          .library(name: "tbb", targets: ["tbb"]),
+          .library(name: "tbb", targets: ["tbb"])
         ]
       #elseif os(Windows) || os(Cygwin) || os(WASI) || os(Android)
         var prods: [Product] = [
@@ -1356,10 +1364,11 @@ enum Arch
       return prods
     }
 
-    public static func ocioDeps() -> [Target.Dependency]
+    static func ocioDeps() -> [Target.Dependency]
     {
       // only add sse2neon on arm arch.
-      let sse2neon: [Target.Dependency] = Arch.cpuArch.family.contains(.arm) ? [.target(name: "sse2neon")] : []
+      let sse2neon: [Target.Dependency] =
+        Arch.cpuArch.family.contains(.arm) ? [.target(name: "sse2neon")] : []
 
       #if os(Linux) || os(OpenBSD) || os(FreeBSD)
         return [
@@ -1367,7 +1376,7 @@ enum Arch
           .target(name: "Imath"),
           .target(name: "OpenEXR"),
           .target(name: "MiniZip"),
-          .target(name: "Yaml")
+          .target(name: "Yaml"),
         ] + sse2neon
       #elseif os(Windows) || os(Cygwin) || os(WASI) || os(Android)
         return [
@@ -1376,7 +1385,7 @@ enum Arch
           .target(name: "OpenEXR"),
           .target(name: "MiniZip"),
           .target(name: "Yaml"),
-          .target(name: "expat")
+          .target(name: "expat"),
         ] + sse2neon
       #else /* os(macOS) || os(visionOS) || os(iOS) || os(tvOS) || os(watchOS) */
         return [
@@ -1390,7 +1399,7 @@ enum Arch
       #endif
     }
 
-    public static func minizipDeps() -> [Target.Dependency]
+    static func minizipDeps() -> [Target.Dependency]
     {
       #if os(Linux) || os(OpenBSD) || os(FreeBSD)
         [
@@ -1406,12 +1415,15 @@ enum Arch
       #endif
     }
 
-    public static func glfwDeps() -> [Target.Dependency]
+    static func glfwDeps() -> [Target.Dependency]
     {
       #if os(macOS) || os(visionOS) || os(iOS) || os(tvOS) || os(watchOS)
         [
           .target(name: "Apple", condition: .when(platforms: Arch.OS.apple.platform)),
-          .product(name: "MoltenVK", package: "MetaverseVulkanFramework", condition: .when(platforms: [.macOS, .iOS, .tvOS])),
+          .product(
+            name: "MoltenVK", package: "MetaverseVulkanFramework",
+            condition: .when(platforms: [.macOS, .iOS, .tvOS])
+          ),
         ]
       #else /* os(Linux) || os(Android) || os(OpenBSD) || os(FreeBSD) || os(Windows) || os(Cygwin) || os(WASI) */
         []
@@ -1433,7 +1445,7 @@ enum Arch
     case wasm32
     case arm64_32
 
-    public var family: [CPU]
+    var family: [CPU]
     {
       switch self
       {

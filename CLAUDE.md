@@ -4,29 +4,29 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-MetaverseKit is a monolithic Swift package that bundles many ASWF (Academy Software Foundation) libraries for building metaverse applications. It serves as the **primary VFX dependency** for [SwiftUSD](https://github.com/wabiverse/SwiftUSD), providing cross-platform access to industry-standard graphics and media libraries.
+SwiftASWF is a monolithic Swift package that bundles many ASWF (Academy Software Foundation) libraries for VFX applications. It serves as the **primary VFX dependency** for [SwiftUSD](https://github.com/wabiverse/SwiftUSD), providing cross-platform access to industry-standard graphics and media libraries.
 
 ## Relationship with SwiftUSD
 
-MetaverseKit is consumed by SwiftUSD as a package dependency. SwiftUSD's `Arch` target (the foundation of all Pixar USD modules) imports these MetaverseKit products:
+SwiftASWF is consumed by SwiftUSD as a package dependency. SwiftUSD's `Arch` target (the foundation of all Pixar USD modules) imports these SwiftASWF products:
 
 ```swift
 // From SwiftUSD's Package.swift - Arch target dependencies
-.product(name: "MetaTBB", package: "MetaverseKit"),
-.product(name: "MaterialX", package: "MetaverseKit"),
-.product(name: "Alembic", package: "MetaverseKit"),
-.product(name: "OpenColorIO", package: "MetaverseKit"),
-.product(name: "OpenImageIO", package: "MetaverseKit"),
-.product(name: "OpenEXR", package: "MetaverseKit"),
-.product(name: "OpenSubdiv", package: "MetaverseKit"),
-.product(name: "OpenVDB", package: "MetaverseKit"),
-.product(name: "Ptex", package: "MetaverseKit"),
-.product(name: "Draco", package: "MetaverseKit"),
-.product(name: "Eigen", package: "MetaverseKit"),
-.product(name: "Apple", package: "MetaverseKit"),  // Apple platforms only
+.product(name: "MetaTBB", package: "SwiftASWF"),
+.product(name: "MaterialX", package: "SwiftASWF"),
+.product(name: "Alembic", package: "SwiftASWF"),
+.product(name: "OpenColorIO", package: "SwiftASWF"),
+.product(name: "OpenImageIO", package: "SwiftASWF"),
+.product(name: "OpenEXR", package: "SwiftASWF"),
+.product(name: "OpenSubdiv", package: "SwiftASWF"),
+.product(name: "OpenVDB", package: "SwiftASWF"),
+.product(name: "Ptex", package: "SwiftASWF"),
+.product(name: "Draco", package: "SwiftASWF"),
+.product(name: "Eigen", package: "SwiftASWF"),
+.product(name: "Apple", package: "SwiftASWF"),  // Apple platforms only
 ```
 
-When modifying MetaverseKit, consider the impact on SwiftUSD builds. Breaking changes to public headers or library exports will affect USD compilation.
+When modifying SwiftASWF, consider the impact on SwiftUSD builds. Breaking changes to public headers or library exports will affect USD compilation.
 
 ## Build Commands
 

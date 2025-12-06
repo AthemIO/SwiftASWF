@@ -6,7 +6,7 @@ on:
 
 jobs:
   update-docs:
-    name: MetaverseKit API Swift ${{ matrix.swift }} on ${{ matrix.os }}
+    name: SwiftASWF API Swift ${{ matrix.swift }} on ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest]
