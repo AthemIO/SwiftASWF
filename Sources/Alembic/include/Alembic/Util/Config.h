@@ -41,6 +41,7 @@
 // for the major.
 #define ALEMBIC_LIBRARY_VERSION 1 * 10000 + 8 * 100 + 5
 
-#define ALEMBIC_WITH_HDF5
+// HDF5 support disabled - matching OpenUSD configuration
+// #define ALEMBIC_WITH_HDF5
 
 #endif

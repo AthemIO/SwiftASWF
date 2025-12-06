@@ -41,7 +41,9 @@ let package = Package(
       dependencies: [
         .target(name: "OneTBB")
       ],
+      path: "Sources/tbbmalloc_proxy",
       cxxSettings: [
+        .headerSearchPath("../OneTBB/include/OneTBB"),
         .define("_XOPEN_SOURCE", to: "1", .when(platforms: Arch.OS.apple.platform)),
         .define("_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH", .when(platforms: [.windows])),
         .define("_ALLOW_KEYWORD_MACROS", to: "1", .when(platforms: [.windows])),
@@ -56,8 +58,11 @@ let package = Package(
         .target(name: "OneTBB"),
         .target(name: "TBBMallocProxy"),
       ],
+      path: "Sources/tbbmalloc",
       cxxSettings: [
         .headerSearchPath("include/TBBMalloc"),
+        .headerSearchPath("../OneTBB/include/OneTBB"),
+        .headerSearchPath(".."),  // For ../tbbmalloc_proxy includes
         .define("_XOPEN_SOURCE", to: "1", .when(platforms: Arch.OS.apple.platform)),
         .define("__TBBMALLOC_BUILD", to: "1"),
         .define("_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH", .when(platforms: [.windows])),
@@ -73,6 +78,8 @@ let package = Package(
         .target(name: "MicrosoftSTL", condition: .when(platforms: Arch.OS.windows.platform))
       ],
       cxxSettings: [
+        .headerSearchPath("include/OneTBB"),
+        .headerSearchPath("tbb"),
         .define("_XOPEN_SOURCE", to: "1", .when(platforms: Arch.OS.apple.platform)),
         .define(
           "TBB_ALLOCATOR_TRAITS_BROKEN", to: "1", .when(platforms: Arch.OS.linux.platform)
@@ -527,6 +534,8 @@ let package = Package(
       cxxSettings: [
         .headerSearchPath("."),
         .headerSearchPath("include/OpenImageIO/detail"),
+        /* TBB include path needed for OpenVDB imageio integration */
+        .headerSearchPath("../OneTBB/include/OneTBB"),
         .define("EMBED_PLUGINS", to: "1"),
         .define("OpenImageIO_EXPORTS", to: "1"),
         .define("OpenImageIO_Util_EXPORTS", to: "1"),
@@ -632,13 +641,24 @@ let package = Package(
     .target(
       name: "Alembic",
       dependencies: [
-        .target(name: "HDF5"),
         .target(name: "Imath"),
         .target(name: "OpenEXR"),
       ],
+      exclude: [
+        "AbcCoreHDF5",  // HDF5 support disabled - matching OpenUSD configuration
+      ],
       publicHeadersPath: "include",
       cxxSettings: [
+        .headerSearchPath("include/Alembic/Abc"),
+        .headerSearchPath("include/Alembic/AbcCollection"),
+        .headerSearchPath("include/Alembic/AbcCoreAbstract"),
+        .headerSearchPath("include/Alembic/AbcCoreFactory"),
+        .headerSearchPath("include/Alembic/AbcCoreLayer"),
+        .headerSearchPath("include/Alembic/AbcCoreOgawa"),
+        .headerSearchPath("include/Alembic/AbcGeom"),
         .headerSearchPath("include/Alembic/AbcMaterial"),
+        .headerSearchPath("include/Alembic/Ogawa"),
+        .headerSearchPath("include/Alembic/Util"),
         .define("_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH", .when(platforms: [.windows])),
         .define("_ALLOW_KEYWORD_MACROS", to: "1", .when(platforms: [.windows])),
         .define("static_assert(_conditional, ...)", to: "", .when(platforms: [.windows])),
@@ -928,6 +948,9 @@ func getConfig(for target: PkgTarget) -> TargetInfo
         // no sdl
         "backends/ImplSDL.cpp",
         "backends/ImplSDLRenderer.cpp",
+        // no vulkan (requires MoltenVK which is not bundled)
+        "backends/ImplVulkan.cpp",
+        "backends/ImplVulkan.h",
       ]
       #if os(Windows)
         config.exclude += [
@@ -935,17 +958,7 @@ func getConfig(for target: PkgTarget) -> TargetInfo
           "backends/ImplGLFW.cpp",
         ]
       #endif /* os(Windows) */
-      #if !os(macOS) && !os(iOS) && !os(tvOS)
-        /* fixup metaversalvulkanframework,
-         we should be able to rig moltenvk
-         to work on visionOS, but disabled
-         for now. */
-        config.exclude += [
-          // no vulkan (for now)
-          "backends/ImplVulkan.cpp",
-          "backends/ImplVulkan.h",
-        ]
-      #endif /* !os(macOS) && !os(iOS) && !os(tvOS) */
+      /* Vulkan backend is now always excluded in base exclude list */
       #if !os(Windows)
         config.exclude += [
           // no win32
@@ -964,12 +977,17 @@ func getConfig(for target: PkgTarget) -> TargetInfo
       break
     case .osd:
       config.exclude = [
-        /* disabled for now */
+        /* OpenCL disabled - no OpenCL support */
         "osd/OpenCLD3D11VertexBuffer.cpp",
         "osd/OpenCLEvaluator.cpp",
         "osd/OpenCLPatchTable.cpp",
         "osd/OpenCLVertexBuffer.cpp",
         "osd/OpenCLGLVertexBuffer.cpp",
+        "osd/clD3D11VertexBuffer.cpp",
+        "osd/clEvaluator.cpp",
+        "osd/clGLVertexBuffer.cpp",
+        "osd/clPatchTable.cpp",
+        "osd/clVertexBuffer.cpp",
         /* peek into apple's late DX3D work
           on macOS, we may want to tap into this. */
         "osd/D3D11ComputeEvaluator.cpp",
@@ -1072,6 +1090,8 @@ func getConfig(for target: PkgTarget) -> TargetInfo
            original openvdb headers remain unchanged.
           ------------------------------------------- */
         .headerSearchPath("include/openvdb"),
+        /* TBB include path needed for OpenVDB-TBB integration */
+        .headerSearchPath("../OneTBB/include/OneTBB"),
         .define("OPENVDB_USE_BLOSC", to: "1"),
         .define("OPENVDB_USE_ZLIB", to: "1"),
         .define("_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH", .when(platforms: [.windows])),

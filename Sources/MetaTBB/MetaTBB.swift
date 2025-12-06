@@ -5,7 +5,7 @@
  *
  * Root of **OneTBB** (threading building blocks)
  * dependency. */
-public class MetaTBB
+public final class MetaTBB: Sendable
 {
   public static let shared = MetaTBB()
 

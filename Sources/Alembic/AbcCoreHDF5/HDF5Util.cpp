@@ -230,7 +230,6 @@ H5Node OpenGroup( H5Node& iParent, const std::string& iName )
         hobj_ref_t childRef = h5HPtr->getChildRef( iParent.getRef(), iName );
 
         hid_t childId = H5Rdereference( iParent.getObject(),
-                                        H5P_DEFAULT,
                                         H5R_OBJECT,
                                         &childRef );
 

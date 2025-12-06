@@ -24,15 +24,15 @@ dependencies: [
 | Target | Version |
 |--------|---------|
 | OpenEXR | 3.2.1 |
-| Imath | 3.1.9 |
+| Imath | 3.1.12 |
 | Eigen | 3.4.0 |
-| OneTBB | 2021.10.0 |
+| OneTBB | 2021.12.0 |
 
 ### Imaging
 
 | Target | Version |
 |--------|---------|
-| OpenImageIO | master |
+| OpenImageIO | 2.7.0 |
 | OpenColorIO | 2.3.0 |
 | TurboJPEG | 3.0.1 |
 | TIFF | 4.6.0 |
@@ -46,7 +46,7 @@ dependencies: [
 |--------|---------|
 | MaterialX | 1.39.3 |
 | OpenSubdiv | 3.6.1 |
-| OpenVDB | 10.1.0 |
+| OpenVDB | 12.0.0 |
 | Alembic | 1.8.5 |
 | Ptex | 2.4.2 |
 | Draco | 1.5.6 |

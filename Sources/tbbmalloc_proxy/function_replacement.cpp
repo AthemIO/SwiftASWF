@@ -14,13 +14,11 @@
     limitations under the License.
 */
 
-#if defined(_WIN32)
-
-#include "OneTBB/oneapi/tbb/detail/_config.h"
-#include "OneTBB/oneapi/tbb/detail/_assert.h"
+#include "oneapi/tbb/detail/_config.h"
+#include "oneapi/tbb/detail/_assert.h"
 #include "../tbb/assert_impl.h"
 
-#if !__TBB_WIN8UI_SUPPORT
+#if !__TBB_WIN8UI_SUPPORT && defined(_WIN32)
 
 #ifndef _CRT_SECURE_NO_DEPRECATE
 #define _CRT_SECURE_NO_DEPRECATE 1
@@ -38,7 +36,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "TBBMallocProxy/function_replacement.h"
+#include "function_replacement.h"
 
 // The information about a standard memory allocation function for the replacement log
 struct FunctionInfo {
@@ -582,5 +580,3 @@ extern "C" __declspec(dllexport) int TBB_malloc_replacement_log(char *** functio
 }
 
 #endif /* !__TBB_WIN8UI_SUPPORT && defined(_WIN32) */
-
-#endif /* _WIN32 */

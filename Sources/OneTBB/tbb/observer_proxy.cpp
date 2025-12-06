@@ -14,12 +14,12 @@
     limitations under the License.
 */
 
-#include "OneTBB/oneapi/tbb/detail/_config.h"
-#include "OneTBB/oneapi/tbb/detail/_utils.h"
+#include "oneapi/tbb/detail/_config.h"
+#include "oneapi/tbb/detail/_utils.h"
 
 #include "observer_proxy.h"
 #include "arena.h"
-#include "main.h"
+#include "tbb_main.h"
 #include "thread_data.h"
 
 #include <atomic>

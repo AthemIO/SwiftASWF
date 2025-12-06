@@ -14,10 +14,10 @@
     limitations under the License.
 */
 
-#include "OneTBB/oneapi/tbb/detail/_utils.h"
+#include "oneapi/tbb/detail/_utils.h"
 #include "governor.h"
 #include "concurrent_monitor.h"
-#include "OneTBB/oneapi/tbb/detail/_waitable_atomic.h"
+#include "oneapi/tbb/detail/_waitable_atomic.h"
 
 #include <type_traits>
 

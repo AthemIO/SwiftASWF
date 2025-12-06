@@ -38,10 +38,10 @@
 #include <cstdlib>
 #endif // __unix__ && !__ANDROID__
 
-#include "TBBMallocProxy/proxy.h"
+#include "proxy.h"
 
-#include "OneTBB/oneapi/tbb/detail/_config.h"
-#include "OneTBB/oneapi/tbb/scalable_allocator.h"
+#include "oneapi/tbb/detail/_config.h"
+#include "oneapi/tbb/scalable_allocator.h"
 #include "../tbb/environment.h"
 
 #if !defined(__EXCEPTIONS) && !defined(_CPPUNWIND) && !defined(__SUNPRO_CC)
@@ -59,7 +59,7 @@
 #include <new>
 
 // Synchronization primitives to protect original library pointers and new_handler
-#include "TBBMallocProxy/Synchronize.h"
+#include "../tbbmalloc/Synchronize.h"
 // Use MallocMutex implementation
 typedef MallocMutex ProxyMutex;
 
@@ -139,7 +139,7 @@ static void *orig_msize;
 
 #elif MALLOC_ZONE_OVERLOAD_ENABLED
 
-#include "TBBMallocProxy/proxy_overload_osx.h"
+#include "proxy_overload_osx.h"
 
 #endif // MALLOC_ZONE_OVERLOAD_ENABLED
 
@@ -347,7 +347,7 @@ void operator delete[](void* ptr, const std::nothrow_t&) noexcept {
 
 #include <stdio.h>
 
-#include "TBBMallocProxy/function_replacement.h"
+#include "function_replacement.h"
 
 template<typename T, size_t N> // generic function to find length of array
 inline size_t arrayLength(const T(&)[N]) {
@@ -770,7 +770,6 @@ void doMallocReplacement()
     #pragma warning(disable:4447)
 #endif
 
-#if !defined(TBBPROXY_NO_DLLMAIN)
 extern "C" BOOL WINAPI DllMain( HINSTANCE hInst, DWORD callReason, LPVOID reserved )
 {
 
@@ -785,7 +784,6 @@ extern "C" BOOL WINAPI DllMain( HINSTANCE hInst, DWORD callReason, LPVOID reserv
 
     return TRUE;
 }
-#endif // !defined(TBBPROXY_NO_DLLMAIN)
 
 #if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
     #pragma warning(pop)

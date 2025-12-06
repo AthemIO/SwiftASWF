@@ -28,15 +28,11 @@
 /* Check which standard library we use. */
 #include <cstddef>
 
-#if defined(_WIN32)
-#    include <MicrosoftSTL/STLVersion.h>
-#else // !defined(_WIN32)
-#    ifdef __has_include
-#        if __has_include(<version>)
-#            include <version>
-#        endif // __has_include(<version>)
-#    endif // __has_include
-#endif // defined(_WIN32)
+#ifdef __has_include
+#if __has_include(<version>)
+#include <version>
+#endif
+#endif
 
 #include "_export.h"
 
@@ -192,7 +188,7 @@
 
 /** __TBB_DYNAMIC_LOAD_ENABLED describes the system possibility to load shared libraries at run time **/
 #ifndef __TBB_DYNAMIC_LOAD_ENABLED
-    #define __TBB_DYNAMIC_LOAD_ENABLED 1
+    #define __TBB_DYNAMIC_LOAD_ENABLED (!__EMSCRIPTEN__)
 #endif
 
 /** __TBB_WIN8UI_SUPPORT enables support of Windows* Store Apps and limit a possibility to load
@@ -205,7 +201,7 @@
 
 /** __TBB_WEAK_SYMBOLS_PRESENT denotes that the system supports the weak symbol mechanism **/
 #ifndef __TBB_WEAK_SYMBOLS_PRESENT
-    #define __TBB_WEAK_SYMBOLS_PRESENT ( !_WIN32 && !__APPLE__ && !__sun && (__TBB_GCC_VERSION >= 40000 || __INTEL_COMPILER ) )
+    #define __TBB_WEAK_SYMBOLS_PRESENT ( !__EMSCRIPTEN__ && !_WIN32 && !__APPLE__ && !__sun && (__TBB_GCC_VERSION >= 40000 || __INTEL_COMPILER ) )
 #endif
 
 /** Presence of compiler features **/
@@ -337,37 +333,10 @@
 #define __TBB_CPP17_UNCAUGHT_EXCEPTIONS_PRESENT             (_MSC_VER >= 1900 || __GLIBCXX__ && __cpp_lib_uncaught_exceptions \
                                                             || _LIBCPP_VERSION >= 3700 && (!__TBB_MACOS_TARGET_VERSION || __TBB_MACOS_TARGET_VERSION >= 101200))
 
-#if defined(_WIN32) && defined(__clang__)
-     // intel intrinsics are not available when
-     // using clang on windows.
-#    define __TBB_TSX_INTRINSICS_PRESENT 0
-#else // !defined(_WIN32) || defined(__clang__)
-#    define __TBB_TSX_INTRINSICS_PRESENT (__RTM__ || __INTEL_COMPILER || (_MSC_VER>=1700 && (__TBB_x86_64 || __TBB_x86_32)))
-#endif // defined(_WIN32) && defined(__clang__)
+#define __TBB_TSX_INTRINSICS_PRESENT (__RTM__ || __INTEL_COMPILER || (_MSC_VER>=1700 && (__TBB_x86_64 || __TBB_x86_32)))
 
-#if defined(_WIN32) && defined(__clang__)
-     // intel intrinsics are not available when
-     // using clang on windows.
-#    define __TBB_WAITPKG_INTRINSICS_PRESENT 0
-#else // !defined(_WIN32) || defined(__clang__)
-#    define __TBB_WAITPKG_INTRINSICS_PRESENT ((__INTEL_COMPILER >= 1900 || __TBB_GCC_VERSION >= 110000 || __TBB_CLANG_VERSION >= 120000) \
-                                             && (_WIN32 || _WIN64 || __unix__ || __APPLE__) && (__TBB_x86_32 || __TBB_x86_64) && !__ANDROID__)
-#endif // defined(_WIN32) && defined(__clang__)
-
-/*
- * __TBB_TARGET_ATTRIBUTE(attrs) - override the compilation target for a function.
- *
- * This accepts one or more comma-separated suffixes to the -m prefix jointly
- * forming the name of a machine-dependent option.  On gcc-like compilers, this
- * enables codegen for the given targets, including arbitrary compiler-generated
- * code as well as the corresponding intrinsics.  On other compilers this macro
- * expands to nothing, though MSVC allows intrinsics to be used anywhere anyway.
- */
-#if defined(__GNUC__) || __has_attribute(target)
-#  define __TBB_TARGET_ATTRIBUTE(attrs)	__attribute__((target(attrs)))
-#else
-#  define __TBB_TARGET_ATTRIBUTE(attrs)
-#endif
+#define __TBB_WAITPKG_INTRINSICS_PRESENT ((__INTEL_COMPILER >= 1900 || __TBB_GCC_VERSION >= 110000 || __TBB_CLANG_VERSION >= 120000) \
+                                         && (_WIN32 || _WIN64 || __unix__ || __APPLE__) && (__TBB_x86_32 || __TBB_x86_64) && !__ANDROID__)
 
 /** Internal TBB features & modes **/
 
@@ -383,19 +352,15 @@
     #define __TBB_NO_IMPLICIT_LINKAGE 1
 #endif
 
-// #if _MSC_VER
-//     #if !__TBB_NO_IMPLICIT_LINKAGE
-//         #ifdef _DEBUG
-//             #if !defined(TBB_NO_LIB_LINKAGE)
-//                 #pragma comment(lib, "tbb12_debug.lib")
-//             #endif // !defined(TBB_NO_LIB_LINKAGE)
-//         #else // !defined(_DEBUG)
-//             #if !defined(TBB_NO_LIB_LINKAGE)
-//                 #pragma comment(lib, "tbb12.lib")
-//             #endif // !defined(TBB_NO_LIB_LINKAGE)
-//         #endif // _DEBUG
-//     #endif // !__TBB_NO_IMPLICIT_LINKAGE
-// #endif // _MSC_VER
+#if _MSC_VER
+    #if !__TBB_NO_IMPLICIT_LINKAGE
+        #ifdef _DEBUG
+            #pragma comment(lib, "tbb12_debug.lib")
+        #else
+            #pragma comment(lib, "tbb12.lib")
+        #endif
+    #endif
+#endif
 
 #ifndef __TBB_SCHEDULER_OBSERVER
     #define __TBB_SCHEDULER_OBSERVER 1
@@ -414,6 +379,9 @@
 #ifndef __TBB_ARENA_BINDING
     #define __TBB_ARENA_BINDING 1
 #endif
+
+// Thread pinning is not available on macOS*
+#define __TBB_CPUBIND_PRESENT (__TBB_ARENA_BINDING && !__APPLE__)
 
 #ifndef __TBB_ENQUEUE_ENFORCED_CONCURRENCY
     #define __TBB_ENQUEUE_ENFORCED_CONCURRENCY 1

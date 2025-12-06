@@ -6,9 +6,9 @@ import OpenColorIO
   import Darwin.C
 #endif
 
-public class OCIOBundler
+public final class OCIOBundler: @unchecked Sendable
 {
-  public static var shared = OCIOBundler()
+  public static let shared = OCIOBundler()
 
   private init()
   {

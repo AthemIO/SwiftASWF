@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2005-2021 Intel Corporation
+    Copyright (c) 2005-2023 Intel Corporation
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,9 +17,9 @@
 #ifndef __TBB_concurrent_monitor_H
 #define __TBB_concurrent_monitor_H
 
-#include "OneTBB/oneapi/tbb/spin_mutex.h"
-#include "OneTBB/oneapi/tbb/detail/_exception.h"
-#include "OneTBB/oneapi/tbb/detail/_aligned_space.h"
+#include "oneapi/tbb/spin_mutex.h"
+#include "oneapi/tbb/detail/_exception.h"
+#include "oneapi/tbb/detail/_aligned_space.h"
 #include "concurrent_monitor_mutex.h"
 #include "semaphore.h"
 
@@ -290,7 +290,17 @@ public:
             n = my_waitset.front();
             if (n != end) {
                 my_waitset.remove(*n);
+
+// GCC 12.x-13.x issues a warning here that to_wait_node(n)->my_is_in_list might have size 0, since n is
+// a base_node pointer. (This cannot happen, because only wait_node pointers are added to my_waitset.)
+#if (__TBB_GCC_VERSION >= 120100 && __TBB_GCC_VERSION < 140000 ) && !__clang__ && !__INTEL_COMPILER
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-overflow"
+#endif
                 to_wait_node(n)->my_is_in_list.store(false, std::memory_order_relaxed);
+#if (__TBB_GCC_VERSION >= 120100 && __TBB_GCC_VERSION < 140000 ) && !__clang__ && !__INTEL_COMPILER
+#pragma GCC diagnostic pop
+#endif
             }
         }
 

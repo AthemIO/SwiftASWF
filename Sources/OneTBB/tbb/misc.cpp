@@ -17,16 +17,14 @@
 // Source file for miscellaneous entities that are infrequently referenced by
 // an executing program.
 
-#include "OneTBB/oneapi/tbb/detail/_exception.h"
-#include "OneTBB/oneapi/tbb/detail/_machine.h"
+#include "oneapi/tbb/detail/_exception.h"
+#include "oneapi/tbb/detail/_machine.h"
 
-#include "OneTBB/oneapi/tbb/version.h"
+#include "oneapi/tbb/version.h"
 
 #include "misc.h"
 #include "governor.h"
-#if !defined(_WIN32)
 #include "assert_impl.h" // Out-of-line TBB assertion handling routines are instantiated here.
-#endif // !defined(_WIN32)
 #include "concurrent_monitor_mutex.h"
 
 #include <cstdio>

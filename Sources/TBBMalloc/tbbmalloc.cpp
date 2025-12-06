@@ -15,11 +15,11 @@
 */
 
 #include "TypeDefinitions.h" // Customize.h and proxy.h get included
-#include "TBBMalloc/tbbmalloc_internal_api.h"
+#include "tbbmalloc_internal_api.h"
 
 #include "../tbb/assert_impl.h" // Out-of-line TBB assertion handling routines are instantiated here.
-#include "OneTBB/oneapi/tbb/version.h"
-#include "OneTBB/oneapi/tbb/scalable_allocator.h"
+#include "oneapi/tbb/version.h"
+#include "oneapi/tbb/scalable_allocator.h"
 
 #undef UNICODE
 
@@ -42,7 +42,7 @@ namespace internal {
 #if _WIN32||_WIN64
 #define MALLOCLIB_NAME "tbbmalloc" DEBUG_SUFFIX ".dll"
 #elif __APPLE__
-#define MALLOCLIB_NAME "libtbbmalloc" DEBUG_SUFFIX ".dylib"
+#define MALLOCLIB_NAME "libtbbmalloc" DEBUG_SUFFIX ".2.dylib"
 #elif __FreeBSD__ || __NetBSD__ || __OpenBSD__ || __sun || _AIX || __ANDROID__
 #define MALLOCLIB_NAME "libtbbmalloc" DEBUG_SUFFIX ".so"
 #elif __unix__
@@ -74,7 +74,6 @@ void init_tbbmalloc() {
 
 #if !__TBB_SOURCE_DIRECTLY_INCLUDED
 #if USE_WINTHREAD
-#   if !defined(TBBMALLOC_NO_DLLMAIN)
 extern "C" BOOL WINAPI DllMain( HINSTANCE /*hInst*/, DWORD callReason, LPVOID lpvReserved)
 {
     if (callReason==DLL_THREAD_DETACH)
@@ -87,7 +86,6 @@ extern "C" BOOL WINAPI DllMain( HINSTANCE /*hInst*/, DWORD callReason, LPVOID lp
     }
     return TRUE;
 }
-#   endif // !defined(TBBMALLOC_NO_DLLMAIN)
 #else /* !USE_WINTHREAD */
 struct RegisterProcessShutdownNotification {
 // Work around non-reentrancy in dlopen() on Android
@@ -100,6 +98,10 @@ struct RegisterProcessShutdownNotification {
         // MALLOC_ASSERT(ret, "Allocator can't load itself.");
         dlopen(MALLOCLIB_NAME, RTLD_NOW);
     }
+
+    RegisterProcessShutdownNotification(RegisterProcessShutdownNotification&) = delete;
+    RegisterProcessShutdownNotification& operator=(const RegisterProcessShutdownNotification&) = delete;
+
     ~RegisterProcessShutdownNotification() {
         __TBB_mallocProcessShutdownNotification(false);
     }

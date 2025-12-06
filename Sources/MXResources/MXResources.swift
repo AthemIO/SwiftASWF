@@ -33,7 +33,7 @@
  * Additionally, we have included the
  * [**MaterialX Resources**](https://github.com/AcademySoftwareFoundation/MaterialX/tree/main/resources)
  * as well. */
-public class MXResourceManager
+public final class MXResourceManager: Sendable
 {
   public static let shared = MXResourceManager()
 

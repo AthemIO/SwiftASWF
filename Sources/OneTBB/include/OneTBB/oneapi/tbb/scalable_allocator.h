@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2005-2021 Intel Corporation
+    Copyright (c) 2005-2023 Intel Corporation
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -18,13 +18,14 @@
 #define __TBB_scalable_allocator_H
 
 #ifdef __cplusplus
-#include "OneTBB/oneapi/tbb/detail/_config.h"
-#include "OneTBB/oneapi/tbb/detail/_utils.h"
+#include "oneapi/tbb/detail/_config.h"
+#include "oneapi/tbb/detail/_utils.h"
+#include "oneapi/tbb/detail/_namespace_injection.h"
 #include <cstdlib>
 #include <utility>
 #include <new> /* std::bad_alloc() */
 #else
-#include "OneTBB/oneapi/tbb/detail/_export.h"
+#include "oneapi/tbb/detail/_export.h"
 #include <stddef.h> /* Need ptrdiff_t and size_t from here. */
 #if !defined(_MSC_VER) || defined(__clang__)
 #include <stdint.h> /* Need intptr_t from here. */
