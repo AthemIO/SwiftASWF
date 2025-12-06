@@ -1,5 +1,6 @@
 # SwiftASWF
 
+[![Swift 6.1](https://img.shields.io/badge/Swift-6.1-F05138?style=flat-square&logo=swift&logoColor=white)](https://swift.org)
 [![Ubuntu](https://img.shields.io/github/actions/workflow/status/AthemIO/SwiftASWF/swift-ubuntu.yml?style=flat-square&label=ubuntu&labelColor=E95420&logoColor=FFFFFF&logo=ubuntu)](https://github.com/AthemIO/SwiftASWF/actions/workflows/swift-ubuntu.yml)
 [![macOS](https://img.shields.io/github/actions/workflow/status/AthemIO/SwiftASWF/swift-macos.yml?style=flat-square&label=macOS&labelColor=000000&logo=apple)](https://github.com/AthemIO/SwiftASWF/actions/workflows/swift-macos.yml)
 [![Windows](https://img.shields.io/github/actions/workflow/status/AthemIO/SwiftASWF/swift-debug-windows.yml?style=flat-square&label=windows&labelColor=357EC7&logo=gitforwindows)](https://github.com/AthemIO/SwiftASWF/actions/workflows/swift-debug-windows.yml)
