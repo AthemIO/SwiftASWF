@@ -1,5 +1,5 @@
 {
-  "originHash" : "2e6669067fcda5e53e5c8f22dc9ffe8cf60a795666a102f14fd1c19ef69c5e96",
+  "originHash" : "5082a61dddc8144f9bbfc523b44947fdf31f0f79061e53fde173f93f763a486a",
   "pins" : [
     {
       "identity" : "libpng",
@@ -17,15 +17,6 @@
       "state" : {
         "revision" : "5f745a17b9a5c2a4283f17c2cde4517610ab5f99",
         "version" : "1.4.1"
-      }
-    },
-    {
-      "identity" : "metaversevulkanframework",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/wabiverse/MetaverseVulkanFramework",
-      "state" : {
-        "revision" : "13c7061599c61a4959c558d8ec1836e5b32b640b",
-        "version" : "1.26.2"
       }
     },
     {

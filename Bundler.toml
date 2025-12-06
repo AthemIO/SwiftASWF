@@ -1,12 +1,12 @@
 format_version = 2
 
-[apps.MetaversalDemo]
-identifier = 'foundation.wabi.MetaversalDemo'
-product = 'MetaversalDemo'
+[apps.SwiftASWFDemo]
+identifier = 'io.athem.SwiftASWFDemo'
+product = 'SwiftASWFDemo'
 version = '1.0.0'
 category = 'public.app-category.graphics-design'
 
-[apps.MetaversalDemo.plist]
+[apps.SwiftASWFDemo.plist]
 commit = '$(COMMIT_HASH)'
 
 [apps.MXGraphEditor]

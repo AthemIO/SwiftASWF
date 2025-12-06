@@ -682,9 +682,9 @@ let package = Package(
     /*
       * Run this from the command line via:
       *
-      * swift bundler run -p macOS MetaversalDemo */
+      * swift bundler run -p macOS SwiftASWFDemo */
     .executableTarget(
-      name: "MetaversalDemo",
+      name: "SwiftASWFDemo",
       dependencies: [
         .target(name: "OneTBB"),
         .target(name: "ImGui"),
@@ -1220,9 +1220,9 @@ func getConfig(for target: PkgTarget) -> TargetInfo
           targets: ["MXResources"]
         ),
         .executable(
-          name: "MetaversalDemo",
+          name: "SwiftASWFDemo",
           targets: [
-            "MetaversalDemo",
+            "SwiftASWFDemo",
             "OpenImageIO",
             "OpenImageIO_Util",
           ]
@@ -1284,22 +1284,11 @@ enum Arch
 
     static func packageDeps() -> [Package.Dependency]
     {
-      #if os(macOS) || os(visionOS) || os(iOS) || os(tvOS) || os(watchOS)
-        [
-          .package(
-            url: "https://github.com/wabiverse/MetaverseVulkanFramework", from: "1.26.2"
-          ),
-          .package(url: "https://github.com/the-swift-collective/libwebp", from: "1.4.1"),
-          .package(url: "https://github.com/the-swift-collective/zlib", from: "1.3.1"),
-          .package(url: "https://github.com/the-swift-collective/libpng", from: "1.6.45"),
-        ]
-      #else /* os(Linux) || os(Android) || os(OpenBSD) || os(FreeBSD) || os(Windows) || os(Cygwin) || os(WASI) */
-        [
-          .package(url: "https://github.com/the-swift-collective/libwebp", from: "1.4.1"),
-          .package(url: "https://github.com/the-swift-collective/zlib", from: "1.3.1"),
-          .package(url: "https://github.com/the-swift-collective/libpng", from: "1.6.45"),
-        ]
-      #endif
+      [
+        .package(url: "https://github.com/the-swift-collective/libwebp", from: "1.4.1"),
+        .package(url: "https://github.com/the-swift-collective/zlib", from: "1.3.1"),
+        .package(url: "https://github.com/the-swift-collective/libpng", from: "1.6.45"),
+      ]
     }
 
     static func targets() -> [Target]
@@ -1420,10 +1409,6 @@ enum Arch
       #if os(macOS) || os(visionOS) || os(iOS) || os(tvOS) || os(watchOS)
         [
           .target(name: "Apple", condition: .when(platforms: Arch.OS.apple.platform)),
-          .product(
-            name: "MoltenVK", package: "MetaverseVulkanFramework",
-            condition: .when(platforms: [.macOS, .iOS, .tvOS])
-          ),
         ]
       #else /* os(Linux) || os(Android) || os(OpenBSD) || os(FreeBSD) || os(Windows) || os(Cygwin) || os(WASI) */
         []
@@ -1552,7 +1537,7 @@ enum PkgTarget: String
   case alembic = "Alembic"
   case blosc = "Blosc"
   case openvdb = "OpenVDB"
-  case demo = "MetaversalDemo"
+  case demo = "SwiftASWFDemo"
   case all
 }
 

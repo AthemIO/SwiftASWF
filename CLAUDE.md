@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-SwiftASWF is a monolithic Swift package that bundles many ASWF (Academy Software Foundation) libraries for VFX applications. It serves as the **primary VFX dependency** for [SwiftUSD](https://github.com/wabiverse/SwiftUSD), providing cross-platform access to industry-standard graphics and media libraries.
+SwiftASWF is a monolithic Swift package that bundles many ASWF (Academy Software Foundation) libraries for VFX applications. It serves as the **primary VFX dependency** for [SwiftUSD](https://github.com/AthemIO/SwiftUSD), providing cross-platform access to industry-standard graphics and media libraries.
 
 ## Relationship with SwiftUSD
 
@@ -35,10 +35,10 @@ When modifying SwiftASWF, consider the impact on SwiftUSD builds. Breaking chang
 swift build -c release
 
 # Build specific target
-swift build -c release --target MetaversalDemo
+swift build -c release --target SwiftASWFDemo
 
 # Run the demo app using Swift Bundler
-swift bundler run -p macOS MetaversalDemo
+swift bundler run -p macOS SwiftASWFDemo
 
 # Run tests
 swift test
@@ -70,14 +70,12 @@ The package wraps 30+ C/C++ libraries as Swift targets, configured in a single l
 
 ### Platform Dependencies
 
-- **macOS/iOS**: Uses MetaverseVulkanFramework (MoltenVK) for Vulkan support
 - **Linux**: Requires system libraries (libbz2-dev, X11, OpenGL)
 - **Windows**: Includes MicrosoftSTL compatibility layer
 
 ### External Package Dependencies
 
 - libwebp, zlib, libpng from `the-swift-collective` GitHub org
-- MetaverseVulkanFramework from `wabiverse` (Apple platforms only)
 
 ## Code Style
 

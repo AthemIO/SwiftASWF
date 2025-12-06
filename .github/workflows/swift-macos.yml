@@ -18,4 +18,4 @@ jobs:
       - name: 🗃️ Checkout Submodules
         run: git submodule update --init --recursive
       - name: 📦 Build
-        run: swift build -c release --target MetaversalDemo
+        run: swift build -c release --target SwiftASWFDemo

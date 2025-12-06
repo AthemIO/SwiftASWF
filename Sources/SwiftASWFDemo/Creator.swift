@@ -140,7 +140,7 @@ class Creator {
         public var window: OSWindow?
 
         public func applicationDidFinishLaunching(_: Notification) {
-            print("MetaversalDemo has launched.")
+            print("SwiftASWFDemo has launched.")
 
             Creator.configColor()
             Creator.configImaging()

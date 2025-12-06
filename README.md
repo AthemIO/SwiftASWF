@@ -1,10 +1,10 @@
 # SwiftASWF
 
-[![Ubuntu](https://img.shields.io/github/actions/workflow/status/wabiverse/SwiftASWF/swift-ubuntu.yml?style=flat-square&label=ubuntu&labelColor=E95420&logoColor=FFFFFF&logo=ubuntu)](https://github.com/wabiverse/SwiftASWF/actions/workflows/swift-ubuntu.yml)
-[![macOS](https://img.shields.io/github/actions/workflow/status/wabiverse/SwiftASWF/swift-macos.yml?style=flat-square&label=macOS&labelColor=000000&logo=apple)](https://github.com/wabiverse/SwiftASWF/actions/workflows/swift-macos.yml)
-[![Windows](https://img.shields.io/github/actions/workflow/status/wabiverse/SwiftASWF/swift-debug-windows.yml?style=flat-square&label=windows&labelColor=357EC7&logo=gitforwindows)](https://github.com/wabiverse/SwiftASWF/actions/workflows/swift-debug-windows.yml)
+[![Ubuntu](https://img.shields.io/github/actions/workflow/status/AthemIO/SwiftASWF/swift-ubuntu.yml?style=flat-square&label=ubuntu&labelColor=E95420&logoColor=FFFFFF&logo=ubuntu)](https://github.com/AthemIO/SwiftASWF/actions/workflows/swift-ubuntu.yml)
+[![macOS](https://img.shields.io/github/actions/workflow/status/AthemIO/SwiftASWF/swift-macos.yml?style=flat-square&label=macOS&labelColor=000000&logo=apple)](https://github.com/AthemIO/SwiftASWF/actions/workflows/swift-macos.yml)
+[![Windows](https://img.shields.io/github/actions/workflow/status/AthemIO/SwiftASWF/swift-debug-windows.yml?style=flat-square&label=windows&labelColor=357EC7&logo=gitforwindows)](https://github.com/AthemIO/SwiftASWF/actions/workflows/swift-debug-windows.yml)
 
-Swift package providing [Academy Software Foundation (ASWF)](https://landscape.aswf.io) libraries for VFX and graphics applications. This package serves as the primary dependency for [SwiftUSD](https://github.com/wabiverse/SwiftUSD).
+Swift package providing [Academy Software Foundation (ASWF)](https://landscape.aswf.io) libraries for VFX and graphics applications. This package serves as the primary dependency for [SwiftUSD](https://github.com/AthemIO/SwiftUSD).
 
 ## Installation
 
@@ -12,7 +12,7 @@ Add SwiftASWF as a dependency in your `Package.swift`:
 
 ```swift
 dependencies: [
-  .package(url: "https://github.com/wabiverse/SwiftASWF.git", from: "1.8.5"),
+  .package(url: "https://github.com/AthemIO/SwiftASWF.git", from: "1.8.5"),
 ]
 ```
 
