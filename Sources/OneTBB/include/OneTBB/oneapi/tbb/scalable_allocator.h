@@ -18,14 +18,14 @@
 #define __TBB_scalable_allocator_H
 
 #ifdef __cplusplus
-#include "oneapi/tbb/detail/_config.h"
-#include "oneapi/tbb/detail/_utils.h"
-#include "oneapi/tbb/detail/_namespace_injection.h"
+#include "detail/_config.h"
+#include "detail/_utils.h"
+#include "detail/_namespace_injection.h"
 #include <cstdlib>
 #include <utility>
 #include <new> /* std::bad_alloc() */
 #else
-#include "oneapi/tbb/detail/_export.h"
+#include "detail/_export.h"
 #include <stddef.h> /* Need ptrdiff_t and size_t from here. */
 #if !defined(_MSC_VER) || defined(__clang__)
 #include <stdint.h> /* Need intptr_t from here. */
