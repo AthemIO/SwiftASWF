@@ -14,11 +14,12 @@
     limitations under the License.
 */
 
+// Move includes inside the Windows guard to avoid duplicate symbol issues on non-Windows
+#if !__TBB_WIN8UI_SUPPORT && defined(_WIN32)
+
 #include "oneapi/tbb/detail/_config.h"
 #include "oneapi/tbb/detail/_assert.h"
 #include "../tbb/assert_impl.h"
-
-#if !__TBB_WIN8UI_SUPPORT && defined(_WIN32)
 
 #ifndef _CRT_SECURE_NO_DEPRECATE
 #define _CRT_SECURE_NO_DEPRECATE 1

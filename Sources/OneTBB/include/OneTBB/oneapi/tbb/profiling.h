@@ -25,13 +25,71 @@
 namespace tbb {
 namespace detail {
 inline namespace d0 {
-    // include list of index names
-    #define TBB_STRING_RESOURCE(index_name,str) index_name,
+    // Note: Inlined from _string_resource.h for Swift C++ interop compatibility.
+    // X-macro patterns with #include inside enums don't work in Swift module builds.
     enum string_resource_index : std::uintptr_t {
-        #include "detail/_string_resource.h"
+        ALGORITHM,
+        PARALLEL_FOR,
+        PARALLEL_FOR_EACH,
+        PARALLEL_INVOKE,
+        PARALLEL_REDUCE,
+        PARALLEL_SCAN,
+        PARALLEL_SORT,
+        PARALLEL_PIPELINE,
+        CUSTOM_CTX,
+        FLOW_NULL,
+        FLOW_BROADCAST_NODE,
+        FLOW_BUFFER_NODE,
+        FLOW_CONTINUE_NODE,
+        FLOW_FUNCTION_NODE,
+        FLOW_JOIN_NODE_QUEUEING,
+        FLOW_JOIN_NODE_RESERVING,
+        FLOW_JOIN_NODE_TAG_MATCHING,
+        FLOW_LIMITER_NODE,
+        FLOW_MULTIFUNCTION_NODE,
+        FLOW_OVERWRITE_NODE,
+        FLOW_PRIORITY_QUEUE_NODE,
+        FLOW_QUEUE_NODE,
+        FLOW_SEQUENCER_NODE,
+        FLOW_INPUT_NODE,
+        FLOW_SPLIT_NODE,
+        FLOW_WRITE_ONCE_NODE,
+        FLOW_INDEXER_NODE,
+        FLOW_COMPOSITE_NODE,
+        FLOW_ASYNC_NODE,
+        FLOW_INPUT_PORT,
+        FLOW_INPUT_PORT_0,
+        FLOW_INPUT_PORT_1,
+        FLOW_INPUT_PORT_2,
+        FLOW_INPUT_PORT_3,
+        FLOW_INPUT_PORT_4,
+        FLOW_INPUT_PORT_5,
+        FLOW_INPUT_PORT_6,
+        FLOW_INPUT_PORT_7,
+        FLOW_INPUT_PORT_8,
+        FLOW_INPUT_PORT_9,
+        FLOW_OUTPUT_PORT,
+        FLOW_OUTPUT_PORT_0,
+        FLOW_OUTPUT_PORT_1,
+        FLOW_OUTPUT_PORT_2,
+        FLOW_OUTPUT_PORT_3,
+        FLOW_OUTPUT_PORT_4,
+        FLOW_OUTPUT_PORT_5,
+        FLOW_OUTPUT_PORT_6,
+        FLOW_OUTPUT_PORT_7,
+        FLOW_OUTPUT_PORT_8,
+        FLOW_OUTPUT_PORT_9,
+        FLOW_OBJECT_NAME,
+        FLOW_BODY,
+        FLOW_GRAPH,
+        FLOW_NODE,
+        FLOW_TASKS,
+        USER_EVENT,
+#if __TBB_FLOW_TRACE_CODEPTR
+        CODE_ADDRESS,
+#endif
         NUM_STRINGS
     };
-    #undef TBB_STRING_RESOURCE
 
     enum itt_relation
     {
