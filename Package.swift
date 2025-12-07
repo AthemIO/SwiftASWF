@@ -1,4 +1,5 @@
 // swift-tools-version: 6.1
+// SwiftASWF - Swift package providing ASWF libraries for 3D applications
 import PackageDescription
 
 let package = Package(
