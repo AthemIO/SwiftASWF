@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------
- * :: :  M  E  T  A  V  E  R  S  E  :                            ::
+ *  A T H E M
  * ----------------------------------------------------------------
  * This software is Licensed under the terms of the Apache License,
  * version 2.0 (the "Apache License") with the following additional
@@ -23,9 +23,7 @@
  * to the Free Software Foundation Inc., with the following address
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- *         Copyright (C) 2024 Wabi Foundation. All Rights Reserved.
- * ----------------------------------------------------------------
- *  . x x x . o o o . x x x . : : : .    o  x  o    . : : : .
+ *  Copyright (C) 2025 Afloat Technologies. All Rights Reserved.
  * ----------------------------------------------------------------
  * Portions of this file derive from an original work of Apple Inc.
  * from the swift/bridging file.

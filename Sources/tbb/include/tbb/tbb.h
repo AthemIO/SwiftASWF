@@ -1,5 +1,5 @@
-#ifndef __WABI_TBB_tbb_H__
-#define __WABI_TBB_tbb_H__
+#ifndef __ATHEM_TBB_tbb_H__
+#define __ATHEM_TBB_tbb_H__
 
 /**
     This header serves as a compatibility layer between
@@ -48,4 +48,4 @@
 #include <tbb/tick_count.h>
 #include <tbb/version.h>
 
-#endif // __WABI_TBB_tbb_H__
+#endif // __ATHEM_TBB_tbb_H__

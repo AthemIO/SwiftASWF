@@ -1,3 +1,3 @@
 #include <MicrosoftSTL/STLVersion.h>
 
-int __wabi_microsoftStl__;
+int __athem_microsoftStl__;

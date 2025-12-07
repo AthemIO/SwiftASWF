@@ -1,0 +1,60 @@
+SwiftASWF Changelog
+===================
+
+v1.8.6  December 7th, 2025
+onetbb:
+    - update from 2021.10.0 to 2021.12.0 for OpenUSD 25.11 compatibility
+    - fix header resolution for consumers using relative includes
+    - remove circular symlinks that caused infinite directory traversal
+opensubdiv:
+    - update from 3.6.0 to 3.6.1 for OpenUSD 25.11 compatibility
+    - add OpenCL backend files to exclude list
+swift:
+    - fix Swift 6 Sendable conformance for MetaTBB, MXResourceManager, OCIOBundler
+    - add Apache 2.0 license headers to all Swift source files
+imgui:
+    - add Vulkan backend to exclude list
+openvdb:
+    - add TBB header search path for internal includes
+openimageio:
+    - add TBB header search path for internal includes
+documentation:
+    - expand README with build instructions and troubleshooting guide
+    - add upstream repository links for all bundled libraries
+    - update version numbers to reflect actual bundled versions
+    - add package description comment to Package.swift
+
+v1.8.5  November 29th, 2025
+alembic:
+    - update from 1.2.x to 1.8.5 for OpenUSD 25.11 compatibility
+tbbmalloc:
+    - rename directories to lowercase for case-sensitive include paths
+    - add symlink Sources/src -> OneTBB for relative includes
+materialx:
+    - fix dependency configuration in SwiftASWFDemo target
+package:
+    - add path configuration for tbbmalloc and tbbmalloc_proxy targets
+
+v1.8.4  November 2025
+initial:
+    - initial release with ASWF library bundle for SwiftUSD
+    - OpenEXR 3.2.1
+    - Imath 3.1.12
+    - MaterialX 1.39.3
+    - OpenColorIO 2.3.0
+    - OpenImageIO 2.7.0
+    - OpenVDB 12.0.0
+    - OpenSubdiv 3.6.0
+    - OneTBB 2021.10.0
+    - Alembic 1.2.x
+    - Ptex 2.4.2
+    - Draco 1.5.6
+    - Blosc 1.21.5
+    - ZStandard 1.5.5
+    - LZMA2 5.4.4
+    - Eigen 3.4.0
+    - ImGui 1.89.9
+    - TurboJPEG 3.0.1
+    - TIFF 4.6.0
+    - HDF5 1.10.0
+    - yaml-cpp 0.8.0

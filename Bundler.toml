@@ -10,7 +10,7 @@ category = 'public.app-category.graphics-design'
 commit = '$(COMMIT_HASH)'
 
 [apps.MXGraphEditor]
-identifier = 'foundation.wabi.MXGraphEditor'
+identifier = 'io.athem.MXGraphEditor'
 product = 'MXGraphEditor'
 version = '1.0.0'
 category = 'public.app-category.graphics-design'

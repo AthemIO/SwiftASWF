@@ -1,5 +1,5 @@
-#ifndef __WABI_MICROSOFT_STL_H__
-#define __WABI_MICROSOFT_STL_H__
+#ifndef __ATHEM_MICROSOFT_STL_H__
+#define __ATHEM_MICROSOFT_STL_H__
 
 #if defined(_WIN32)
 // otherwise, MicrosoftSTL completely fails when
@@ -13,4 +13,4 @@
 # include <MicrosoftSTL/STLVersion.h>
 #endif // defined(_WIN32)
 
-#endif // __WABI_MICROSOFT_STL_H__
+#endif // __ATHEM_MICROSOFT_STL_H__

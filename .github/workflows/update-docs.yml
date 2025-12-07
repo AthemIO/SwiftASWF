@@ -36,7 +36,7 @@ jobs:
       - name: Compile Docs
         run: |
           set -eux
-          git config user.email "devs@wabi.foundation"
+          git config user.email "hello@athem.io"
           git config user.name "furby™"
           git fetch
           git worktree add --checkout gh-pages origin/gh-pages

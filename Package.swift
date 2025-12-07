@@ -382,6 +382,8 @@ let package = Package(
       ],
       path: "Sources/Imath/src",
       exclude: [
+        /* Exclude Imath subdirectory - duplicate source files */
+        "Imath",
         /* metapy builds pyimath. */
         "python/PyBindImath",
         "python/PyImath",

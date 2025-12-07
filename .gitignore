@@ -5,3 +5,4 @@
 .vscode
 .swiftpm
 CLAUDE.md
+*.exr
