@@ -18,6 +18,7 @@
 #include "OpenColorTypes.h"
 #include "OpenColorTransforms.h"
 #include "OpenColorAppHelpers.h"
+#include "OCIOBridge.h"
 
 /*
 
