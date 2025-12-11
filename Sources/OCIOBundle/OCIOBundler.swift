@@ -22,7 +22,7 @@ public final class OCIOBundler: @unchecked Sendable
     ocioInit()
   }
 
-  public var config: OpenColorIO_v2_3.ConstConfigRcPtr?
+  public var config: OpenColorIO_v2_4.ConstConfigRcPtr?
 
   public func ocioInit(config ocio: OCIOConfigProfileType = .aces)
   {
@@ -34,7 +34,7 @@ public final class OCIOBundler: @unchecked Sendable
       setenv("OCIO", ocioConfig, 1)
     #endif /* macOS */
 
-    config = OpenColorIO_v2_3.GetCurrentConfig()
+    config = OpenColorIO_v2_4.GetCurrentConfig()
   }
 
   public func ocioInfo()

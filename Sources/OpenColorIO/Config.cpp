@@ -12,6 +12,8 @@
 #include <regex>
 #include <functional>
 
+#include "pystring/pystring.h"
+
 #include <OpenColorIO/OpenColorIO.h>
 
 #include "builtinconfigs/BuiltinConfigRegistry.h"
@@ -34,7 +36,6 @@
 #include "Platform.h"
 #include "PrivateTypes.h"
 #include "Processor.h"
-#include "pystring/pystring.h"
 #include "transforms/FileTransform.h"
 #include "utils/StringUtils.h"
 #include "ViewingRules.h"
@@ -246,7 +247,7 @@ static constexpr unsigned LastSupportedMajorVersion = OCIO_VERSION_MAJOR;
 
 // For each major version keep the most recent minor.
 static const unsigned int LastSupportedMinorVersion[] = {0, // Version 1
-                                                         3  // Version 2
+                                                         4  // Version 2
                                                          };
 
 } // namespace
@@ -435,7 +436,7 @@ public:
             {
                 m_viewTransforms.push_back(vt->createEditableCopy());
             }
-
+            m_defaultViewTransform = rhs.m_defaultViewTransform;
             m_defaultLumaCoefs = rhs.m_defaultLumaCoefs;
             m_strictParsing = rhs.m_strictParsing;
 
@@ -754,7 +755,7 @@ public:
                     std::ostringstream os;
                     os << "Config failed view validation. The display '" << display << "' ";
                     os << "contains a shared view '" << (*sharedViewIt).m_name;
-                    os << "that refers to a color space, '" << display << "', ";
+                    os << "' that refers to a color space, '" << display << "', ";
                     os << "that is not a display-referred color space.";
                     m_validationtext = os.str();
                     throw Exception(m_validationtext.c_str());
@@ -2821,6 +2822,23 @@ bool Config::isColorSpaceLinear(const char * colorSpace, ReferenceSpaceType refe
         auto procToReference = config.getImpl()->getProcessorWithoutCaching(
             config, t, TRANSFORM_DIR_FORWARD
         );
+
+        // TODO: It could be useful to try and avoid evaluating points through ops that are
+        // expensive but highly unlikely to be linear (with inverse Lut3D being the prime example).
+        // There are some heuristics that are used in ConfigUtils.cpp that are intended to filter
+        // out color spaces from consideration before a processor is even calculated.  However,
+        // those are not entirely appropriate here since one could imagine wanting to know if a
+        // color space involving a FileTransform (an ASC CDL being a good example) is linear.
+        // Likewise, one might want to know whether a color space involving a Look or ColorSpace
+        // Transform is linear (both of those are filtered out by the ConfigUtils heuristics).
+        // It seems like the right approach here is to go ahead and build the processor and
+        // thereby convert File/Look/ColorSpace Transforms into ops.  But currently there is
+        // no method on the Processor class to know if it contains a Lut3D.  There is the
+        // ProcessorMetadata files list, though that is not as precise.  For example, it would
+        // not say if a CLF or CTF file contains a Lut3D or just a matrix.  Probably the best
+        // solution would be to have each op sub-class provide an isLinear method and then
+        // surface that on the Processor class, iterating over each op in the Processor.
+
         auto optCPUProc = procToReference->getOptimizedCPUProcessor(OPTIMIZATION_NONE);
         optCPUProc->apply(desc, descDst);
 
@@ -4100,6 +4118,10 @@ void Config::addLook(const ConstLookRcPtr & look)
         if(StringUtils::Lower(getImpl()->m_looksList[i]->getName()) == namelower)
         {
             getImpl()->m_looksList[i] = look->createEditableCopy();
+
+            AutoMutex lock(getImpl()->m_cacheidMutex);
+            getImpl()->resetCacheIDs();
+
             return;
         }
     }
@@ -4715,20 +4737,29 @@ ConstProcessorRcPtr Config::GetProcessorFromConfigs(const ConstContextRcPtr & sr
             "the source color space.");
     }
 
+    const char* csName = dstConfig->getDisplayViewColorSpaceName(dstDisplay, dstView);
+    const char* displayColorSpaceName = View::UseDisplayName(csName) ? dstDisplay : csName;
+    ConstColorSpaceRcPtr displayColorSpace = dstConfig->getColorSpace(displayColorSpaceName);
+    if (!displayColorSpace)
+    {
+        throw Exception("Can't create the processor for the destination config: "
+            "display color space not found.");
+    }
+
     auto p2 = dstConfig->getProcessor(dstContext, dstInterchangeName, dstDisplay, dstView, direction);
     if (!p2)
     {
         throw Exception("Can't create the processor for the destination config "
-            "and the destination color space.");
+            "and the destination display view transform.");
     }
 
     ProcessorRcPtr processor = Processor::Create();
     processor->getImpl()->setProcessorCacheFlags(srcConfig->getImpl()->m_cacheFlags);
 
-    // If the source color spaces is a data space, its corresponding processor
+    // If either of the color spaces are data spaces, its corresponding processor
     // will be empty, but need to make sure the entire result is also empty to
     // better match the semantics of how data spaces are handled.
-    if (!srcColorSpace->isData())
+    if (!srcColorSpace->isData() && !displayColorSpace->isData())
     {
         if (direction == TRANSFORM_DIR_INVERSE)
         {
@@ -5200,6 +5231,53 @@ void Config::Impl::checkVersionConsistency(ConstTransformRcPtr & transform) cons
                 throw Exception("Only config version 2.3 (or higher) can have "
                                 "BuiltinTransform style 'DISPLAY - CIE-XYZ-D65_to_DisplayP3'.");
             }
+            if (m_majorVersion == 2 && m_minorVersion < 4 
+                    && (   0 == Platform::Strcasecmp(blt->getStyle(), "APPLE_LOG_to_ACES2065-1")
+                        || 0 == Platform::Strcasecmp(blt->getStyle(), "CURVE - APPLE_LOG_to_LINEAR")
+                        || 0 == Platform::Strcasecmp(blt->getStyle(), "CURVE - HLG-OETF")
+                        || 0 == Platform::Strcasecmp(blt->getStyle(), "CURVE - HLG-OETF-INVERSE")
+                        || 0 == Platform::Strcasecmp(blt->getStyle(), "DISPLAY - CIE-XYZ-D65_to_DCDM-D65")
+                        || 0 == Platform::Strcasecmp(blt->getStyle(), "DISPLAY - CIE-XYZ-D65_to_ST2084-DCDM-D65")
+                        || 0 == Platform::Strcasecmp(blt->getStyle(), "ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - SDR-100nit-REC709_2.0")
+                        || 0 == Platform::Strcasecmp(blt->getStyle(), "ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - SDR-100nit-P3-D65_2.0")
+                        || 0 == Platform::Strcasecmp(blt->getStyle(), "ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - HDR-108nit-P3-D65_2.0")
+                        || 0 == Platform::Strcasecmp(blt->getStyle(), "ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - HDR-300nit-P3-D65_2.0")
+                        || 0 == Platform::Strcasecmp(blt->getStyle(), "ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - HDR-500nit-P3-D65_2.0")
+                        || 0 == Platform::Strcasecmp(blt->getStyle(), "ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - HDR-1000nit-P3-D65_2.0")
+                        || 0 == Platform::Strcasecmp(blt->getStyle(), "ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - HDR-2000nit-P3-D65_2.0")
+                        || 0 == Platform::Strcasecmp(blt->getStyle(), "ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - HDR-4000nit-P3-D65_2.0")
+                        || 0 == Platform::Strcasecmp(blt->getStyle(), "ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - HDR-500nit-REC2020_2.0")
+                        || 0 == Platform::Strcasecmp(blt->getStyle(), "ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - HDR-1000nit-REC2020_2.0")
+                        || 0 == Platform::Strcasecmp(blt->getStyle(), "ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - HDR-2000nit-REC2020_2.0")
+                        || 0 == Platform::Strcasecmp(blt->getStyle(), "ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - HDR-4000nit-REC2020_2.0")
+                        || 0 == Platform::Strcasecmp(blt->getStyle(), "ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - SDR-100nit-REC709-D60-in-REC709-D65_2.0")
+                        || 0 == Platform::Strcasecmp(blt->getStyle(), "ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - SDR-100nit-REC709-D60-in-P3-D65_2.0")
+                        || 0 == Platform::Strcasecmp(blt->getStyle(), "ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - SDR-100nit-REC709-D60-in-REC2020-D65_2.0")
+                        || 0 == Platform::Strcasecmp(blt->getStyle(), "ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - SDR-100nit-P3-D60-in-P3-D65_2.0")
+                        || 0 == Platform::Strcasecmp(blt->getStyle(), "ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - SDR-100nit-P3-D60-in-XYZ-E_2.0")
+                        || 0 == Platform::Strcasecmp(blt->getStyle(), "ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - HDR-108nit-P3-D60-in-P3-D65_2.0")
+                        || 0 == Platform::Strcasecmp(blt->getStyle(), "ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - HDR-300nit-P3-D60-in-XYZ-E_2.0")
+                        || 0 == Platform::Strcasecmp(blt->getStyle(), "ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - HDR-500nit-P3-D60-in-P3-D65_2.0")
+                        || 0 == Platform::Strcasecmp(blt->getStyle(), "ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - HDR-1000nit-P3-D60-in-P3-D65_2.0")
+                        || 0 == Platform::Strcasecmp(blt->getStyle(), "ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - HDR-2000nit-P3-D60-in-P3-D65_2.0")
+                        || 0 == Platform::Strcasecmp(blt->getStyle(), "ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - HDR-4000nit-P3-D60-in-P3-D65_2.0")
+                        || 0 == Platform::Strcasecmp(blt->getStyle(), "ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - HDR-500nit-P3-D60-in-REC2020-D65_2.0")
+                        || 0 == Platform::Strcasecmp(blt->getStyle(), "ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - HDR-1000nit-P3-D60-in-REC2020-D65_2.0")
+                        || 0 == Platform::Strcasecmp(blt->getStyle(), "ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - HDR-2000nit-P3-D60-in-REC2020-D65_2.0")
+                        || 0 == Platform::Strcasecmp(blt->getStyle(), "ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - HDR-4000nit-P3-D60-in-REC2020-D65_2.0")
+                        || 0 == Platform::Strcasecmp(blt->getStyle(), "ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - HDR-500nit-REC2020-D60-in-REC2020-D65_2.0")
+                        || 0 == Platform::Strcasecmp(blt->getStyle(), "ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - HDR-1000nit-REC2020-D60-in-REC2020-D65_2.0")
+                        || 0 == Platform::Strcasecmp(blt->getStyle(), "ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - HDR-2000nit-REC2020-D60-in-REC2020-D65_2.0")
+                        || 0 == Platform::Strcasecmp(blt->getStyle(), "ACES-OUTPUT - ACES2065-1_to_CIE-XYZ-D65 - HDR-4000nit-REC2020-D60-in-REC2020-D65_2.0")
+                        // NB: This one was added in OCIO 2.4.1.
+                        || 0 == Platform::Strcasecmp(blt->getStyle(), "DISPLAY - CIE-XYZ-D65_to_DisplayP3-HDR") )
+                )
+            {
+                std::ostringstream os;
+                os << "Only config version 2.4 (or higher) can have BuiltinTransform style '"
+                   << blt->getStyle() << "'.";
+                throw Exception(os.str().c_str());
+            }
         }
         else if (ConstCDLTransformRcPtr cdl = DynamicPtrCast<const CDLTransform>(transform))
         {
@@ -5259,16 +5337,34 @@ void Config::Impl::checkVersionConsistency(ConstTransformRcPtr & transform) cons
         }
         else if (ConstFixedFunctionTransformRcPtr ff = DynamicPtrCast<const FixedFunctionTransform>(transform))
         {
+            auto ffstyle = ff->getStyle();
             if (m_majorVersion < 2)
             {
                 throw Exception("Only config version 2 (or higher) can have "
                                 "FixedFunctionTransform.");
             }
 
-            if (m_majorVersion == 2 && m_minorVersion < 1 && ff->getStyle() == FIXED_FUNCTION_ACES_GAMUT_COMP_13)
+            if (m_majorVersion == 2 && m_minorVersion < 1 && ffstyle == FIXED_FUNCTION_ACES_GAMUT_COMP_13)
             {
                 throw Exception("Only config version 2.1 (or higher) can have "
                                 "FixedFunctionTransform style 'ACES_GAMUT_COMP_13'.");
+            }
+
+            if (m_majorVersion == 2 && m_minorVersion < 4 )
+            {
+                if( ffstyle == FIXED_FUNCTION_LIN_TO_PQ  || 
+                    ffstyle == FIXED_FUNCTION_LIN_TO_GAMMA_LOG || 
+                    ffstyle == FIXED_FUNCTION_LIN_TO_DOUBLE_LOG ||
+                    ffstyle == FIXED_FUNCTION_ACES_OUTPUT_TRANSFORM_20 ||
+                    ffstyle == FIXED_FUNCTION_ACES_RGB_TO_JMH_20 ||
+                    ffstyle == FIXED_FUNCTION_ACES_TONESCALE_COMPRESS_20 ||
+                    ffstyle == FIXED_FUNCTION_ACES_GAMUT_COMPRESS_20 )
+                {
+                    std::ostringstream ss;
+                    ss << "Only config version 2.4 (or higher) can have FixedFunctionTransform style '" 
+                       << FixedFunctionStyleToString(ffstyle) << "'.";
+                    throw Exception(ss.str().c_str());
+                }
             }
         }
         else if (DynamicPtrCast<const GradingPrimaryTransform>(transform))

@@ -2,7 +2,7 @@
 // Copyright Contributors to the OpenColorIO Project.
 
 #include "Lut1DOpCPU_AVX2.h"
-#if OCIO_USE_AVX2 && defined(__AVX2__)
+#if OCIO_USE_AVX2
 
 #include <immintrin.h>
 #include <string.h>
@@ -15,8 +15,7 @@ namespace OCIO_NAMESPACE
 namespace {
 
 
-static inline OCIO_TARGET_ATTRIBUTE("arch=haswell")
-__m256 apply_lut_avx2(const float *lut, __m256 v, const __m256& scale, const __m256& lut_max)
+static inline __m256 apply_lut_avx2(const float *lut, __m256 v, const __m256& scale, const __m256& lut_max)
 {
     __m256 zero   = _mm256_setzero_ps();
     __m256 one_f  = _mm256_set1_ps(1);
@@ -42,8 +41,7 @@ __m256 apply_lut_avx2(const float *lut, __m256 v, const __m256& scale, const __m
 }
 
 template <BitDepth inBD, BitDepth outBD>
-static inline OCIO_TARGET_ATTRIBUTE("arch=haswell")
-void linear1D(const float *lutR, const float *lutG,const float *lutB, int dim, const void *inImg, void *outImg, long numPixels)
+static inline void linear1D(const float *lutR, const float *lutG,const float *lutB, int dim, const void *inImg, void *outImg, long numPixels)
 {
 
     typedef typename BitDepthInfo<inBD>::Type InType;

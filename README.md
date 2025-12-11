@@ -75,7 +75,7 @@ swift bundler run -p macOS SwiftASWFDemo
 | Target | Version | Upstream |
 |--------|---------|----------|
 | OpenImageIO | 2.7.0 | [AcademySoftwareFoundation/OpenImageIO](https://github.com/AcademySoftwareFoundation/OpenImageIO) |
-| OpenColorIO | 2.3.0 | [AcademySoftwareFoundation/OpenColorIO](https://github.com/AcademySoftwareFoundation/OpenColorIO) |
+| OpenColorIO | 2.4.2 | [AcademySoftwareFoundation/OpenColorIO](https://github.com/AcademySoftwareFoundation/OpenColorIO) |
 | TurboJPEG | 3.0.1 | [libjpeg-turbo/libjpeg-turbo](https://github.com/libjpeg-turbo/libjpeg-turbo) |
 | TIFF | 4.6.0 | [libsdl-org/libtiff](https://github.com/libsdl-org/libtiff) |
 | LibPNG | 1.6.40 | [pnggroup/libpng](https://github.com/pnggroup/libpng) |

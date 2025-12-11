@@ -2,7 +2,7 @@
 // Copyright Contributors to the OpenColorIO Project.
 
 #include "Lut1DOpCPU_AVX.h"
-#if OCIO_USE_AVX && defined(__AVX__)
+#if OCIO_USE_AVX
 
 #include <immintrin.h>
 #include <string.h>
@@ -26,14 +26,12 @@ namespace {
     buffer[7] = (src)[indices[7]];               \
     dst = _mm256_load_ps(buffer)
 
-static inline OCIO_TARGET_ATTRIBUTE("avx")
-__m256 fmadd_ps_avx(__m256 a, __m256 b, __m256 c)
+static inline __m256 fmadd_ps_avx(__m256 a, __m256 b, __m256 c)
 {
     return  _mm256_add_ps(_mm256_mul_ps(a, b), c);
 }
 
-static inline OCIO_TARGET_ATTRIBUTE("avx")
-__m256 apply_lut_avx(const float *lut, __m256 v, const __m256& scale, const __m256& lut_max)
+static inline __m256 apply_lut_avx(const float *lut, __m256 v, const __m256& scale, const __m256& lut_max)
 {
     AVX_ALIGN(uint32_t indices_p[8]);
     AVX_ALIGN(uint32_t indices_n[8]);
@@ -65,8 +63,7 @@ __m256 apply_lut_avx(const float *lut, __m256 v, const __m256& scale, const __m2
 }
 
 template <BitDepth inBD, BitDepth outBD>
-static inline OCIO_TARGET_ATTRIBUTE("avx")
-void linear1D(const float *lutR, const float *lutG,const float *lutB, int dim, const void *inImg, void *outImg, long numPixels)
+static inline void linear1D(const float *lutR, const float *lutG,const float *lutB, int dim, const void *inImg, void *outImg, long numPixels)
 {
 
     typedef typename BitDepthInfo<inBD>::Type InType;

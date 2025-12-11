@@ -19,6 +19,7 @@
 #include "Lut1DOpCPU_SSE2.h"
 #include "Lut1DOpCPU_AVX.h"
 #include "Lut1DOpCPU_AVX2.h"
+#include "Lut1DOpCPU_AVX512.h"
 
 
 #define L_ADJUST(val) \
@@ -285,17 +286,24 @@ BaseLut1DRenderer<inBD, outBD>::BaseLut1DRenderer(ConstLut1DOpDataRcPtr & lut)
     }
 #endif
 
-#if OCIO_USE_AVX && defined(__AVX__)
+#if OCIO_USE_AVX
     if (CPUInfo::instance().hasAVX())
     {
         m_applyLutFunc = AVXGetLut1DApplyFunc(inBD, outBD);
     }
 #endif
 
-#if OCIO_USE_AVX2 && defined(__AVX2__)
+#if OCIO_USE_AVX2
     if (CPUInfo::instance().hasAVX2() && !CPUInfo::instance().AVX2SlowGather())
     {
         m_applyLutFunc = AVX2GetLut1DApplyFunc(inBD, outBD);
+    }
+#endif
+
+#if OCIO_USE_AVX512
+    if (CPUInfo::instance().hasAVX512())
+    {
+        m_applyLutFunc = AVX512GetLut1DApplyFunc(inBD, outBD);
     }
 #endif
 }
@@ -316,14 +324,14 @@ BaseLut1DRenderer<inBD, outBD>::BaseLut1DRenderer(ConstLut1DOpDataRcPtr & lut, B
     }
 #endif
 
-#if OCIO_USE_AVX && defined(__AVX__)
+#if OCIO_USE_AVX
     if (CPUInfo::instance().hasAVX() && !CPUInfo::instance().AVXSlow())
     {
         m_applyLutFunc = AVXGetLut1DApplyFunc(inBD, m_outBitDepth);
     }
 #endif
 
-#if OCIO_USE_AVX2 && defined(__AVX2__)
+#if OCIO_USE_AVX2
     if (CPUInfo::instance().hasAVX2() && !CPUInfo::instance().AVX2SlowGather())
     {
         m_applyLutFunc = AVX2GetLut1DApplyFunc(inBD, m_outBitDepth);
@@ -641,7 +649,7 @@ void Lut1DRenderer<inBD, outBD>::apply(const void * inImg, void * outImg, long n
             out += 4;
         }
     }
-    else if (this->m_applyLutFunc)
+    else if (this->m_applyLutFunc && numPixels > 1)
     {
         const float * lutR = (const float *)this->m_tmpLutR;
         const float * lutG = (const float *)this->m_tmpLutG;

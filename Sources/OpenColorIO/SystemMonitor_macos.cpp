@@ -12,14 +12,15 @@
 
 #if !TARGET_OS_IPHONE
 
+#include <sstream>
 #include <Carbon/Carbon.h>
 #include <IOKit/graphics/IOGraphicsLib.h>
 
 #include "Logging.h"
-
 #include "Platform.h"
 #include "utils/StringUtils.h"
 #include "SystemMonitor.h"
+
 
 namespace OCIO_NAMESPACE
 {
@@ -229,6 +230,5 @@ void SystemMonitorsImpl::getAllMonitors()
 
 } // namespace OCIO_NAMESPACE
 
-#endif /* !TARGET_OS_IPHONE */
-
-#endif /* !defined(__APPLE__) || defined(__ANDROID__) */
+#endif // !TARGET_OS_IPHONE
+#endif // defined(__APPLE__) && !defined(__ANDROID__)

@@ -9,16 +9,37 @@
 #if OCIO_USE_SSE2
 
 // Include the appropriate SIMD intrinsics header based on the architecture (Intel vs. ARM).
-#if !defined(__aarch64__)
+#if !defined(__aarch64__) && !defined(_M_ARM64)
     #include <emmintrin.h>
-#elif defined(__aarch64__)
+#elif defined(__aarch64__) || defined(_M_ARM64)
     // ARM architecture A64 (ARM64)
     #if OCIO_USE_SSE2NEON
+        // MSVC doesn't like the redefinitions below and requires the existing functions to be undef-ed
+        #if defined(_M_ARM64)
+            #define _mm_max_ps _mm_max_ps_orig
+            #define _mm_min_ps _mm_min_ps_orig
+        #endif
+
         #include <sse2neon.h>
+
+        #if defined(_M_ARM64)
+            #undef _mm_max_ps
+            #undef _mm_min_ps
+        #endif
+
+        // Current versions of MSVC do not define float16_t, so we do it ourselves using
+        // int16_t as an intermediate type
+        #if defined(_M_ARM64) && !defined(float16_t)
+            #define float16_t int16_t
+        #endif
+
+        // Current versions of MSVC do not define vst1q_f16, so we do it ourselves using
+        // internal methods from MSVC's arm_neon.h
+        #if defined(_M_ARM64) && !defined(vst1q_f16)
+            #define vst1q_f16(A, B) neon_st1m_q16((A), __float16x8_t_to_n128(B));
+        #endif
     #endif
 #endif
-
-#include <stdio.h>
 
 #include <OpenColorIO/OpenColorIO.h>
 #include "BitDepthUtils.h"
@@ -32,7 +53,7 @@ namespace OCIO_NAMESPACE
 // Note that it is important for the code below this ifdef stays in the OCIO_NAMESPACE since
 // it is redefining two of the functions from sse2neon.
 
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64)
     #if OCIO_USE_SSE2NEON
         // Using vmaxnmq_f32 and vminnmq_f32 rather than sse2neon's vmaxq_f32 and vminq_f32 due to 
         // NaN handling. This doesn't seem to be significantly slower than the default sse2neon behavior.
@@ -75,6 +96,8 @@ static inline void sse2RGBATranspose_4x4(__m128 row0, __m128 row1, __m128 row2, 
     out_b = _mm_movelh_ps(tmp1, tmp3);
     out_a = _mm_movehl_ps(tmp3, tmp1);
 }
+
+#if !OCIO_USE_SSE2NEON
 
 static inline __m128i sse2_blendv(__m128i a, __m128i b, __m128i mask)
 {
@@ -163,6 +186,8 @@ static inline __m128 sse2_cvtph_ps(__m128i a)
 
     return  _mm_or_ps(o, sign);
 }
+
+#endif
 
 // Note Packing functions perform no 0.0 - 1.0 normalization
 // but perform 0 - max value clamping for integer formats
@@ -290,21 +315,48 @@ struct SSE2RGBAPack<BIT_DEPTH_F16>
         __m128i rgba_00_01 = _mm_loadu_si128((const __m128i*)(in + 0));
         __m128i rgba_02_03 = _mm_loadu_si128((const __m128i*)(in + 8));
 
+#if OCIO_USE_SSE2NEON
+        // use neon hardware support for f16 to f32
+        __m128 rgba0 = vreinterpretq_m128_f32(
+            vcvt_f32_f16(vget_low_f16(vreinterpretq_f16_s64(vreinterpretq_s64_m128i(rgba_00_01))))
+        );
+        __m128 rgba1 = vreinterpretq_m128_f32(
+            vcvt_f32_f16(vget_high_f16(vreinterpretq_f16_s64(vreinterpretq_s64_m128i(rgba_00_01))))
+        );
+        __m128 rgba2 = vreinterpretq_m128_f32(
+            vcvt_f32_f16(vget_low_f16(vreinterpretq_f16_s64(vreinterpretq_s64_m128i(rgba_02_03))))
+        );
+        __m128 rgba3 = vreinterpretq_m128_f32(
+            vcvt_f32_f16(vget_high_f16(vreinterpretq_f16_s64(vreinterpretq_s64_m128i(rgba_02_03))))
+        );
+#else
         __m128 rgba0 = sse2_cvtph_ps(rgba_00_01);
         __m128 rgba1 = sse2_cvtph_ps(_mm_shuffle_epi32(rgba_00_01, _MM_SHUFFLE(1,0,3,2)));
         __m128 rgba2 = sse2_cvtph_ps(rgba_02_03);
         __m128 rgba3 = sse2_cvtph_ps(_mm_shuffle_epi32(rgba_02_03, _MM_SHUFFLE(1,0,3,2)));
-
+#endif
         sse2RGBATranspose_4x4(rgba0, rgba1, rgba2, rgba3, r, g, b, a);
     }
 
     static inline  void Store(half *out, __m128 r, __m128 g, __m128 b, __m128 a)
     {
         __m128 rgba0, rgba1, rgba2, rgba3;
-        __m128i rgba;
-
         sse2RGBATranspose_4x4(r, g, b, a, rgba0, rgba1, rgba2, rgba3);
 
+#if OCIO_USE_SSE2NEON
+        // use neon hardware support for f32 to f16 (apart from in MSVC, which doesnt support it)
+        float16x8_t rgba;
+        float16x4_t rgba00_01 = vcvt_f16_f32(vreinterpretq_f32_m128(rgba0));
+        float16x4_t rgba03_03 = vcvt_f16_f32(vreinterpretq_f32_m128(rgba1));
+        float16x4_t rgba04_05 = vcvt_f16_f32(vreinterpretq_f32_m128(rgba2));
+        float16x4_t rgba06_07 = vcvt_f16_f32(vreinterpretq_f32_m128(rgba3));
+        rgba = vcombine_f16(rgba00_01, rgba03_03);
+        vst1q_f16((float16_t *)(out+0), rgba);
+
+        rgba = vcombine_f16(rgba04_05, rgba06_07);
+        vst1q_f16((float16_t *)(out+8), rgba);
+#else
+        __m128i rgba;
         __m128i rgba00_01 = sse2_cvtps_ph(rgba0);
         __m128i rgba02_03 = sse2_cvtps_ph(rgba1);
         __m128i rgba04_05 = sse2_cvtps_ph(rgba2);
@@ -315,6 +367,7 @@ struct SSE2RGBAPack<BIT_DEPTH_F16>
 
         rgba = _mm_xor_si128(rgba04_05, _mm_shuffle_epi32(rgba06_07, _MM_SHUFFLE(1,0,3,2)));
         _mm_storeu_si128((__m128i*)(out+8), rgba);
+#endif
     }
 };
 

@@ -9,6 +9,8 @@
 #include <iostream>
 #include <iterator>
 
+#include "pystring/pystring.h"
+
 #include <OpenColorIO/OpenColorIO.h>
 
 #include "Caching.h"
@@ -19,7 +21,6 @@
 #include "ops/noop/NoOps.h"
 #include "PathUtils.h"
 #include "Platform.h"
-#include "pystring/pystring.h"
 #include "utils/StringUtils.h"
 
 namespace OCIO_NAMESPACE
@@ -157,6 +158,11 @@ const char * FileTransform::GetFormatExtensionByIndex(int index)
     return FormatRegistry::GetInstance().getFormatExtensionByIndex(FORMAT_CAPABILITY_READ, index);
 }
 
+bool FileTransform::IsFormatExtensionSupported(const char * extension)
+{
+    return FormatRegistry::GetInstance().isFormatExtensionSupported(extension);
+}
+
 std::ostream& operator<< (std::ostream& os, const FileTransform& t)
 {
     os << "<FileTransform ";
@@ -186,35 +192,33 @@ std::unique_ptr<std::istream> getLutData(
 {
     if (config.getConfigIOProxy())
     {
-        std::vector<uint8_t> buffer = config.getConfigIOProxy()->getLutData(filepath.c_str());
-        std::stringstream ss;
-        ss.write(reinterpret_cast<const char*>(buffer.data()), buffer.size());
+        std::vector<uint8_t> buffer;
+        // Try to open through proxy.
+        try 
+        {
+            buffer = config.getConfigIOProxy()->getLutData(filepath.c_str());
+        } 
+        catch (const std::exception&) 
+        {
+            // If the path is absolute, we'll try the file system, but otherwise
+            // nothing to do.
+            if (!pystring::os::path::isabs(filepath)) 
+              throw;
+        }
 
-        return std::unique_ptr<std::stringstream>(
-            new std::stringstream(std::move(ss))
-        );
+        // If the buffer is empty, we'll try the file system for abs paths.
+        if (!buffer.empty() || !pystring::os::path::isabs(filepath)) 
+        {
+            auto pss = std::unique_ptr<std::stringstream>(new std::stringstream);
+            pss->write(reinterpret_cast<const char*>(buffer.data()), buffer.size());
+
+            return pss;
+        }
     }
 
     // Default behavior. Return file stream.
-    return std::unique_ptr<std::ifstream>(
-        new std::ifstream(Platform::filenameToUTF(filepath).c_str(), mode)
-    );
-}
-
-// Close stream returned by getLutData
-void closeLutStream(const Config & config, const std::istream & istream)
-{
-    // No-op when it is using ConfigIOProxy since getLutData returns a vector<uint8_t>.
-    if (config.getConfigIOProxy() == nullptr)
-    {
-        // The std::istream is coming from a std::ifstream.
-        // Pointer cast to ifstream and then close it.
-        std::ifstream * pIfStream = (std::ifstream *) &istream;
-        if (pIfStream->is_open())
-        {
-            pIfStream->close();
-        }
-    }
+    return std::unique_ptr<std::istream>(new std::ifstream(
+        Platform::filenameToUTF(filepath), mode));
 }
 
 bool CollectContextVariables(const Config &, 
@@ -521,6 +525,32 @@ const char * FormatRegistry::getFormatExtensionByIndex(int capability, int index
     return "";
 }
 
+bool FormatRegistry::isFormatExtensionSupported(const char * extension) const
+{
+    // Early return false with an input of just the dot or invalid pointer.
+    if (!extension || !*extension || 0 == strcmp(extension, "."))
+    {
+        return false;
+    }
+
+    // If dot is present at the start, pointer arithmetic increment up by one to ignore that dot.
+    FileFormatVectorMap::const_iterator iter;
+    if (extension[0] == '.')
+    {
+        iter = m_formatsByExtension.find(StringUtils::Lower(extension + 1));
+    }
+    else
+    {
+        iter = m_formatsByExtension.find(StringUtils::Lower(extension));
+    }
+
+    if (iter != m_formatsByExtension.end())
+    {
+        return true;
+    }
+    return false;
+}
+
 ///////////////////////////////////////////////////////////////////////////
 
 FileFormat::~FileFormat()
@@ -603,9 +633,8 @@ void LoadFileUncached(FileFormat * & returnFormat,
                 filepath, 
                 tryFormat->isBinary() ? std::ios_base::binary : std::ios_base::in 
             );
-            auto & filestream = *pStream;
             
-            if (!filestream.good())
+            if (!pStream || !pStream->good())
             {
                 std::ostringstream os;
                 os << "The specified FileTransform srcfile, '";
@@ -615,7 +644,7 @@ void LoadFileUncached(FileFormat * & returnFormat,
                 throw Exception(os.str().c_str());
             }
 
-            CachedFileRcPtr cachedFile = tryFormat->read(filestream, filepath, interp);
+            CachedFileRcPtr cachedFile = tryFormat->read(*pStream, filepath, interp);
 
             if(IsDebugLoggingEnabled())
             {
@@ -628,17 +657,10 @@ void LoadFileUncached(FileFormat * & returnFormat,
             returnFormat = tryFormat;
             returnCachedFile = cachedFile;
 
-            closeLutStream(config, filestream);
-
             return;
         }
         catch(std::exception & e)
         {
-            if (pStream)
-            {
-                closeLutStream(config, *pStream); 
-            }
-
             primaryErrorText += "    '";
             primaryErrorText += tryFormat->getName();
             primaryErrorText += "' failed with: ";
@@ -680,9 +702,8 @@ void LoadFileUncached(FileFormat * & returnFormat,
                 filepath, 
                 altFormat->isBinary() ? std::ios_base::binary : std::ios_base::in 
             );
-            auto& filestream = *pStream;
             
-            if (!filestream.good())
+            if (!pStream || !pStream->good())
             {
                 std::ostringstream os;
                 os << "The specified FileTransform srcfile, '";
@@ -693,7 +714,7 @@ void LoadFileUncached(FileFormat * & returnFormat,
                 throw Exception(os.str().c_str());
             }
 
-            cachedFile = altFormat->read(filestream, filepath, interp);
+            cachedFile = altFormat->read(*pStream, filepath, interp);
 
             if(IsDebugLoggingEnabled())
             {
@@ -706,17 +727,10 @@ void LoadFileUncached(FileFormat * & returnFormat,
             returnFormat = altFormat;
             returnCachedFile = cachedFile;
 
-            closeLutStream(config, filestream);
-
             return;
         }
         catch(std::exception & e)
         {
-            if (pStream)
-            {
-                closeLutStream(config, *pStream); 
-            }
-            
             if(IsDebugLoggingEnabled())
             {
                 std::ostringstream os;

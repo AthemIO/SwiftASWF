@@ -2,11 +2,11 @@
 // Copyright Contributors to the OpenColorIO Project.
 
 
-#if !defined(_WIN32) || defined(__ANDROID__)
+#if !defined(_WIN32)
 
 // do nothing.
 
-#else // defined(_WIN32) && !defined(__ANDROID__)
+#else // defined(_WIN32)
 
 #include <windows.h>
 
@@ -74,10 +74,10 @@ void getAllMonitorsWithQueryDisplayConfig(std::vector<std::tstring> & monitorsNa
 
             if (result == ERROR_SUCCESS)
             {
-                std::wstring ws((result == ERROR_SUCCESS && targetName.flags.friendlyNameFromEdid) ? targetName.monitorFriendlyDeviceName : L"");
-                std::tstring name(ws.begin(), ws.end());
-
-                monitorsName.push_back(name);
+                monitorsName.push_back(
+                    (result == ERROR_SUCCESS && targetName.flags.friendlyNameFromEdid) ? 
+                    targetName.monitorFriendlyDeviceName : L""
+                );
             }
         }
     }
@@ -148,8 +148,7 @@ void SystemMonitorsImpl::getAllMonitors()
                         friendlyMonitorNames.at(dispNum) : std::tstring(dispDevice.DeviceString);
 
                 std::tstring strippedDeviceName = deviceName;
-                std::wstring dName(deviceName.begin(), deviceName.end());
-                if(StringUtils::StartsWith(Platform::Utf16ToUtf8(dName), "\\\\.\\DISPLAY"))
+                if(StringUtils::StartsWith(Platform::Utf16ToUtf8(deviceName), "\\\\.\\DISPLAY"))
                 {
                     // Remove the slashes.
                     std::string prefix = "\\\\.\\";
@@ -195,4 +194,4 @@ void SystemMonitorsImpl::getAllMonitors()
 
 } // namespace OCIO_NAMESPACE
 
-#endif /* !defined(_WIN32) || defined(__ANDROID__) */
+#endif // defined(_WIN32)

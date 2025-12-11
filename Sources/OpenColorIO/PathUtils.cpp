@@ -5,12 +5,13 @@
 #include <iostream>
 #include <map>
 
+#include "pystring/pystring.h"
+
 #include <OpenColorIO/OpenColorIO.h>
 
 #include "Mutex.h"
 #include "PathUtils.h"
 #include "Platform.h"
-#include "pystring/pystring.h"
 #include "utils/StringUtils.h"
 #include "OCIOZArchive.h"
 
@@ -87,20 +88,26 @@ std::string GetFastFileHash(const std::string & filename, const Context & contex
             fileHashResultPtr->ready = true;
 
             std::string h = "";
-            if (!context.getConfigIOProxy())
-            {
-                // Default case.
-                h = g_hashFunction(filename);
-            }
-            else
+            if (context.getConfigIOProxy())
             {
                 // Case for when ConfigIOProxy is used (callbacks mechanism).
                 h = context.getConfigIOProxy()->getFastLutFileHash(filename.c_str());
+
+                // For absolute paths, if the proxy does not provide a hash, try the file system.
+                if (h.empty() && pystring::os::path::isabs(filename)) 
+                {
+                    h = g_hashFunction(filename);
+                }
+            }
+            else
+            {
+                // Default case
+                h = g_hashFunction(filename);
             }
 
             fileHashResultPtr->hash = h;
         }
-    
+
         hash = fileHashResultPtr->hash;
     }
 
@@ -218,4 +225,3 @@ int ParseColorSpaceFromString(const Config & config, const char * str)
 }
 
 } // namespace OCIO_NAMESPACE
-

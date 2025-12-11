@@ -6,26 +6,26 @@
 #define INCLUDED_OCIO_OPENCOLORABI_H
 
 // Makefile configuration options
-#define OCIO_NAMESPACE OpenColorIO_v2_3
+#define OCIO_NAMESPACE OpenColorIO_v2_4
 
-#define OCIO_VERSION_STR        "2.3.0"
+#define OCIO_VERSION_STR        "2.4.2"
 #define OCIO_VERSION_STATUS_STR ""
-#define OCIO_VERSION_FULL_STR   "2.3.0"
+#define OCIO_VERSION_FULL_STR   "2.4.2"
 
 // Deprecated synonym for downstream projects that expect the 1.x name
-#define OCIO_VERSION            "2.3.0"
+#define OCIO_VERSION            "2.4.2"
 
 /* Version as a single 4-byte hex number, e.g. 0x01050200 == 1.5.2
-   Use this for numeric comparisons, e.g. #if OCIO_VERSION_HEX >= ... 
+   Use this for numeric comparisons, e.g. #if OCIO_VERSION_HEX >= ...
    Note: in the case where SOVERSION is overridden at compile-time,
    this will reflect the original API version number.
    */
 #define OCIO_VERSION_HEX ((2 << 24) | \
-                          (3 << 16) | \
-                          (0 <<  8))
+                          (4 << 16) | \
+                          (2 <<  8))
 
 #define OCIO_VERSION_MAJOR 2
-#define OCIO_VERSION_MINOR 3
+#define OCIO_VERSION_MINOR 4
 
 
 // Highlight deprecated methods or classes.

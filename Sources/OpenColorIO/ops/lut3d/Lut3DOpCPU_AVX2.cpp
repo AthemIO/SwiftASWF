@@ -2,7 +2,7 @@
 // Copyright Contributors to the OpenColorIO Project.
 
 #include "Lut3DOpCPU_AVX2.h"
-#if OCIO_USE_AVX2 && defined(__AVX2__)
+#if OCIO_USE_AVX2
 
 #include <immintrin.h>
 #include <string.h>
@@ -29,8 +29,7 @@ struct rgbavec_avx2 {
     sample_g = _mm256_i32gather_ps(src+1, idx, 4);              \
     sample_b = _mm256_i32gather_ps(src+2, idx, 4)
 
-static inline OCIO_TARGET_ATTRIBUTE("arch=haswell")
-rgbavec_avx2 interp_tetrahedral_avx2(const Lut3DContextAVX2 &ctx, __m256& r, __m256& g, __m256& b, __m256& a)
+static inline rgbavec_avx2 interp_tetrahedral_avx2(const Lut3DContextAVX2 &ctx, __m256& r, __m256& g, __m256& b, __m256& a)
 {
     __m256 x0, x1, x2;
     __m256 cxxxa;
@@ -175,8 +174,7 @@ rgbavec_avx2 interp_tetrahedral_avx2(const Lut3DContextAVX2 &ctx, __m256& r, __m
 }
 
 template<BitDepth inBD, BitDepth outBD>
-inline OCIO_TARGET_ATTRIBUTE("arch=haswell")
-void applyTetrahedralAVX2Func(const float *lut3d, int dim, const void *inImg, void *outImg, int numPixels)
+inline void applyTetrahedralAVX2Func(const float *lut3d, int dim, const void *inImg, void *outImg, int numPixels)
 {
     typedef typename BitDepthInfo<inBD>::Type InType;
     typedef typename BitDepthInfo<outBD>::Type OutType;
@@ -279,4 +277,4 @@ void applyTetrahedralAVX2(const float *lut3d, int dim, const float *src, float *
 
 } // OCIO_NAMESPACE
 
-#endif // OCIO_USE_AVX2 && defined(__AVX2__)
+#endif // OCIO_USE_AVX2

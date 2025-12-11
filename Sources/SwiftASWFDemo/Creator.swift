@@ -24,7 +24,7 @@ import Ptex
     import Python
 #endif  // canImport(Python) && os(macOS)
 
-public typealias OCIO = OpenColorIO_v2_3
+public typealias OCIO = OpenColorIO_v2_4
 public typealias OIIO = OpenImageIO_v2_5
 
 #if canImport(AppKit) || canImport(UIKit)

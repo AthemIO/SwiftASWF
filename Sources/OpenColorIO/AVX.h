@@ -6,10 +6,9 @@
 #define INCLUDED_OCIO_AVX_H
 
 #include "CPUInfo.h"
-#if OCIO_USE_AVX && defined(__AVX__)
+#if OCIO_USE_AVX
 
 #include <immintrin.h>
-#include <stdio.h>
 
 #include <OpenColorIO/OpenColorIO.h>
 #include "BitDepthUtils.h"
@@ -21,29 +20,25 @@
 namespace OCIO_NAMESPACE
 {
 
-inline OCIO_TARGET_ATTRIBUTE("avx")
-__m256 avx_movelh_ps(__m256 a, __m256 b)
+inline __m256 avx_movelh_ps(__m256 a, __m256 b)
 {
     return _mm256_castpd_ps(_mm256_unpacklo_pd(_mm256_castps_pd(a), _mm256_castps_pd(b)));
 }
 
-inline OCIO_TARGET_ATTRIBUTE("avx")
-__m256 avx_movehl_ps(__m256 a, __m256 b)
+inline __m256 avx_movehl_ps(__m256 a, __m256 b)
 {
     // NOTE: this is a and b are reversed to match sse2 movhlps which is different than unpckhpd
     return _mm256_castpd_ps(_mm256_unpackhi_pd(_mm256_castps_pd(b), _mm256_castps_pd(a)));
 }
 
-inline OCIO_TARGET_ATTRIBUTE("avx")
-__m256 avx_clamp(__m256 value, const __m256& maxValue)
+inline __m256 avx_clamp(__m256 value, const __m256& maxValue)
 {
     value = _mm256_max_ps(value, _mm256_setzero_ps());
     return _mm256_min_ps(value, maxValue);
 }
 
-inline OCIO_TARGET_ATTRIBUTE("avx")
-void avxRGBATranspose_4x4_4x4(__m256 row0, __m256 row1, __m256 row2, __m256 row3,
-                              __m256 &out_r, __m256 &out_g, __m256 &out_b, __m256 &out_a )
+inline void avxRGBATranspose_4x4_4x4(__m256 row0, __m256 row1, __m256 row2, __m256 row3,
+                                      __m256 &out_r, __m256 &out_g, __m256 &out_b, __m256 &out_a )
 {
     // the rgba transpose result will look this
     //
@@ -69,8 +64,7 @@ void avxRGBATranspose_4x4_4x4(__m256 row0, __m256 row1, __m256 row2, __m256 row3
 
 }
 
-inline OCIO_TARGET_ATTRIBUTE("avx")
-__m256i avx_load_u8(__m128i a)
+inline __m256i avx_load_u8(__m128i a)
 {
     __m128i b = _mm_shuffle_epi32(a, _MM_SHUFFLE(1,0,3,1));
     b = _mm_cvtepu8_epi32(b);
@@ -79,8 +73,7 @@ __m256i avx_load_u8(__m128i a)
     return _mm256_insertf128_si256(_mm256_castsi128_si256(a), b, 1);
 }
 
-inline OCIO_TARGET_ATTRIBUTE("avx")
-__m128i avx_pack_u8(__m256i a, __m256i b)
+inline __m128i avx_pack_u8(__m256i a, __m256i b)
 {
     const __m128i lo0_shuf =  _mm_setr_epi8(  0, 4, 8,12, -1,-1,-1, -1,  -1,-1,-1,-1,   -1,-1,-1,-1);
     const __m128i lo1_shuf =  _mm_setr_epi8( -1,-1,-1,-1,  0, 4, 8, 12,  -1,-1,-1,-1,   -1,-1,-1,-1);
@@ -103,8 +96,7 @@ template<BitDepth BD> struct AVXRGBAPack {};
 template <>
 struct AVXRGBAPack<BIT_DEPTH_UINT8>
 {
-    static inline OCIO_TARGET_ATTRIBUTE("avx")
-    void Load(const uint8_t *in, __m256& r, __m256& g, __m256& b, __m256& a)
+    static inline void Load(const uint8_t *in, __m256& r, __m256& g, __m256& b, __m256& a)
     {
         __m256i rgba_00_07 = _mm256_loadu_si256((const __m256i*)in);
 
@@ -123,9 +115,7 @@ struct AVXRGBAPack<BIT_DEPTH_UINT8>
 
         avxRGBATranspose_4x4_4x4(rgba0, rgba1, rgba2, rgba3, r, g, b, a);
     }
-
-    static inline OCIO_TARGET_ATTRIBUTE("avx")
-    void Store(uint8_t *out, __m256 r, __m256 g, __m256 b, __m256 a)
+    static inline void Store(uint8_t *out, __m256 r, __m256 g, __m256 b, __m256 a)
     {
         __m256 rgba0, rgba1, rgba2, rgba3;
         const __m256 maxValue = _mm256_set1_ps(255.0f);
@@ -152,8 +142,7 @@ struct AVXRGBAPack<BIT_DEPTH_UINT8>
     }
 };
 
-inline OCIO_TARGET_ATTRIBUTE("avx")
-__m256i avx_unpack_u16(__m128i a)
+inline __m256i avx_unpack_u16(__m128i a)
 {
     __m128i b = _mm_shuffle_epi32(a, _MM_SHUFFLE(1,0,3,2));
     b = _mm_cvtepu16_epi32(b);
@@ -162,8 +151,7 @@ __m256i avx_unpack_u16(__m128i a)
     return _mm256_insertf128_si256(_mm256_castsi128_si256(a), b, 1);
 }
 
-inline OCIO_TARGET_ATTRIBUTE("avx")
-__m128i avx_pack_u16(__m256i a)
+inline __m128i avx_pack_u16(__m256i a)
 {
     const __m128i lo_pack_shuffle16 = _mm_setr_epi8( 0,  1,  4,  5,
                                                      8,  9, 12, 13,
@@ -189,8 +177,7 @@ struct AVXRGBAPack16
 {
     typedef typename BitDepthInfo<BD>::Type Type;
 
-    static inline OCIO_TARGET_ATTRIBUTE("avx")
-    void Load(const Type *in, __m256& r, __m256& g, __m256& b, __m256& a)
+    static inline void Load(const Type *in, __m256& r, __m256& g, __m256& b, __m256& a)
     {
         // const __m256 scale = _mm256_set1_ps(1.0f / (float)BitDepthInfo<BD>::maxValue);
         __m256i rgba_00_03 = _mm256_loadu_si256((const __m256i*)(in +  0));
@@ -204,8 +191,7 @@ struct AVXRGBAPack16
         avxRGBATranspose_4x4_4x4(rgba0, rgba1, rgba2, rgba3, r, g, b, a);
     }
 
-    static inline OCIO_TARGET_ATTRIBUTE("avx")
-    void Store(Type *out, __m256 r, __m256 g, __m256 b, __m256 a)
+    static inline void Store(Type *out, __m256 r, __m256 g, __m256 b, __m256 a)
     {
         __m256 rgba0, rgba1, rgba2, rgba3;
         __m128i lo, hi;
@@ -242,13 +228,11 @@ struct AVXRGBAPack16
 template <>
 struct AVXRGBAPack<BIT_DEPTH_UINT10>
 {
-    static inline OCIO_TARGET_ATTRIBUTE("avx")
-    void Load(const uint16_t *in, __m256& r, __m256& g, __m256& b, __m256& a)
+    static inline void Load(const uint16_t *in, __m256& r, __m256& g, __m256& b, __m256& a)
     {
         AVXRGBAPack16<BIT_DEPTH_UINT10>::Load(in, r, g, b, a);
     }
-    static inline OCIO_TARGET_ATTRIBUTE("avx")
-    void Store(uint16_t *out, __m256 r, __m256 g, __m256 b, __m256 a)
+    static inline void Store(uint16_t *out, __m256 r, __m256 g, __m256 b, __m256 a)
     {
         AVXRGBAPack16<BIT_DEPTH_UINT10>::Store(out, r, g, b, a);
     }
@@ -257,13 +241,11 @@ struct AVXRGBAPack<BIT_DEPTH_UINT10>
 template <>
 struct AVXRGBAPack<BIT_DEPTH_UINT12>
 {
-    static inline OCIO_TARGET_ATTRIBUTE("avx")
-    void Load(const uint16_t *in, __m256& r, __m256& g, __m256& b, __m256& a)
+    static inline void Load(const uint16_t *in, __m256& r, __m256& g, __m256& b, __m256& a)
     {
         AVXRGBAPack16<BIT_DEPTH_UINT12>::Load(in, r, g, b, a);
     }
-    static inline OCIO_TARGET_ATTRIBUTE("avx")
-    void Store(uint16_t *out, __m256 r, __m256 g, __m256 b, __m256 a)
+    static inline  void Store(uint16_t *out, __m256 r, __m256 g, __m256 b, __m256 a)
     {
         AVXRGBAPack16<BIT_DEPTH_UINT12>::Store(out, r, g, b, a);
     }
@@ -272,13 +254,11 @@ struct AVXRGBAPack<BIT_DEPTH_UINT12>
 template <>
 struct AVXRGBAPack<BIT_DEPTH_UINT16>
 {
-    static inline OCIO_TARGET_ATTRIBUTE("avx")
-    void Load(const uint16_t *in, __m256& r, __m256& g, __m256& b, __m256& a)
+    static inline void Load(const uint16_t *in, __m256& r, __m256& g, __m256& b, __m256& a)
     {
         AVXRGBAPack16<BIT_DEPTH_UINT16>::Load(in, r, g, b, a);
     }
-    static inline OCIO_TARGET_ATTRIBUTE("avx")
-    void Store(uint16_t *out, __m256 r, __m256 g, __m256 b, __m256 a)
+    static inline  void Store(uint16_t *out, __m256 r, __m256 g, __m256 b, __m256 a)
     {
         AVXRGBAPack16<BIT_DEPTH_UINT16>::Store(out, r, g, b, a);
     }
@@ -289,8 +269,7 @@ struct AVXRGBAPack<BIT_DEPTH_UINT16>
 template <>
 struct AVXRGBAPack<BIT_DEPTH_F16>
 {
-    static inline OCIO_TARGET_ATTRIBUTE("avx")
-    void Load(const half *in, __m256& r, __m256& g, __m256& b, __m256& a)
+    static inline void Load(const half *in, __m256& r, __m256& g, __m256& b, __m256& a)
     {
 
         __m256i rgba_00_03 = _mm256_loadu_si256((const __m256i*)(in +  0));
@@ -304,8 +283,7 @@ struct AVXRGBAPack<BIT_DEPTH_F16>
         avxRGBATranspose_4x4_4x4(rgba0, rgba1, rgba2, rgba3, r, g, b, a);
     }
 
-    static inline OCIO_TARGET_ATTRIBUTE("avx,f16c")
-    void Store(half *out, __m256 r, __m256 g, __m256 b, __m256 a)
+    static inline  void Store(half *out, __m256 r, __m256 g, __m256 b, __m256 a)
     {
         __m256 rgba0, rgba1, rgba2, rgba3;
         __m256i rgba;
@@ -330,8 +308,7 @@ struct AVXRGBAPack<BIT_DEPTH_F16>
 template <>
 struct AVXRGBAPack<BIT_DEPTH_F32>
 {
-    static inline OCIO_TARGET_ATTRIBUTE("avx")
-    void Load(const float *in, __m256& r, __m256& g, __m256& b, __m256& a)
+    static inline void Load(const float *in, __m256& r, __m256& g, __m256& b, __m256& a)
     {
         __m256 rgba0 = _mm256_loadu_ps(in +  0);
         __m256 rgba1 = _mm256_loadu_ps(in +  8);
@@ -342,8 +319,7 @@ struct AVXRGBAPack<BIT_DEPTH_F32>
 
     }
 
-    static inline OCIO_TARGET_ATTRIBUTE("avx")
-    void Store(float *out, __m256 r, __m256 g, __m256 b, __m256 a)
+    static inline void Store(float *out, __m256 r, __m256 g, __m256 b, __m256 a)
     {
         __m256 rgba0, rgba1, rgba2, rgba3;
         avxRGBATranspose_4x4_4x4(r, g, b, a, rgba0, rgba1, rgba2, rgba3);
