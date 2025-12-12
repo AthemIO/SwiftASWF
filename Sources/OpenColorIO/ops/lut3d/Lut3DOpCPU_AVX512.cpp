@@ -4,6 +4,15 @@
 #include "Lut3DOpCPU_AVX512.h"
 #if OCIO_USE_AVX512
 
+// Enable AVX512 instruction generation for all functions in this file.
+// This is needed because Swift Package Manager doesn't support per-file compiler flags.
+#if defined(__clang__)
+#pragma clang attribute push(__attribute__((target("avx512f,avx512bw,avx512vl,avx512dq"))), apply_to=function)
+#elif defined(__GNUC__)
+#pragma GCC push_options
+#pragma GCC target("avx512f,avx512bw,avx512vl,avx512dq")
+#endif
+
 #include <immintrin.h>
 #include <string.h>
 
@@ -255,5 +264,11 @@ void applyTetrahedralAVX512(const float *lut3d, int dim, const float *src, float
 }
 
 } // OCIO_NAMESPACE
+
+#if defined(__clang__)
+#pragma clang attribute pop
+#elif defined(__GNUC__)
+#pragma GCC pop_options
+#endif
 
 #endif // OCIO_USE_AVX512

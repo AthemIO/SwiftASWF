@@ -8,6 +8,15 @@
 #include "CPUInfo.h"
 #if OCIO_USE_AVX512
 
+// Enable AVX512 instruction generation for all functions in this header.
+// This is needed because Swift Package Manager doesn't support per-file compiler flags.
+#if defined(__clang__)
+#pragma clang attribute push(__attribute__((target("avx512f,avx512bw,avx512vl,avx512dq"))), apply_to=function)
+#elif defined(__GNUC__)
+#pragma GCC push_options
+#pragma GCC target("avx512f,avx512bw,avx512vl,avx512dq")
+#endif
+
 #include <immintrin.h>
 
 #include <OpenColorIO/OpenColorIO.h>
@@ -461,6 +470,12 @@ struct AVX512RGBAPack<BIT_DEPTH_F32>
 };
 
 } // namespace OCIO_NAMESPACE
+
+#if defined(__clang__)
+#pragma clang attribute pop
+#elif defined(__GNUC__)
+#pragma GCC pop_options
+#endif
 
 #endif // OCIO_USE_AVX512
 #endif // INCLUDED_OCIO_AVX512_H
