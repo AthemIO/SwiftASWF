@@ -59,7 +59,7 @@ let package = Package(
         .target(name: "OneTBB"),
         .target(name: "TBBMallocProxy"),
       ],
-      path: "Sources/tbbmalloc",
+      path: "Sources/TBBMalloc",
       cxxSettings: [
         .headerSearchPath("include/TBBMalloc"),
         .headerSearchPath("../OneTBB/include/OneTBB"),
