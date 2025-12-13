@@ -1841,10 +1841,11 @@ __m128 Renderer_PQ_TO_LIN_SSE<true>::myPower(__m128 x, __m128 exp)
     return ssePower(x, exp);
 }
 
-#if (_MSC_VER >= 1920) && (OCIO_USE_AVX)
+#if (_MSC_VER >= 1920) && (OCIO_USE_AVX) && !defined(__clang__)
 // MSVC 2019+ has built-in _mm_pow_ps() SVML intrinsic implementation
 // accessible through immintrin.h. Therefore precise SIMD version is available
 // only when compiled with MSVC and AVX support.
+// Note: Clang on Windows defines _MSC_VER but doesn't have SVML intrinsics.
 template<>
 __m128 Renderer_PQ_TO_LIN_SSE<false>::myPower(__m128 x, __m128 exp)
 {
@@ -1896,16 +1897,16 @@ __m128 Renderer_LIN_TO_PQ_SSE<true>::myPower(__m128 x, __m128 exp)
     return ssePower(x, exp);
 }
 
-#if (_MSC_VER >= 1920) && (OCIO_USE_AVX)
-// Only Windows compilers have built-in _mm_pow_ps() SVML intrinsic
-// implementation, so non-fast SIMD version is available only on Windows for
-// now.
+#if (_MSC_VER >= 1920) && (OCIO_USE_AVX) && !defined(__clang__)
+// Only MSVC compilers have built-in _mm_pow_ps() SVML intrinsic
+// implementation, so non-fast SIMD version is available only on MSVC for now.
+// Note: Clang on Windows defines _MSC_VER but doesn't have SVML intrinsics.
 template<>
 __m128 Renderer_LIN_TO_PQ_SSE<false>::myPower(__m128 x, __m128 exp)
 {
     return _mm_pow_ps(x, exp);
 }
-#endif // (_MSC_VER >= 1920) && (OCIO_USE_AVX)
+#endif // (_MSC_VER >= 1920) && (OCIO_USE_AVX) && !defined(__clang__)
 
 template<bool FAST_POWER>
 void Renderer_LIN_TO_PQ_SSE<FAST_POWER>::apply(const void* inImg, void* outImg, long numPixels) const
@@ -2273,11 +2274,11 @@ ConstOpCPURcPtr GetFixedFunctionCPURenderer(ConstFixedFunctionOpDataRcPtr & func
             {
                 return std::make_shared<Renderer_LIN_TO_PQ_SSE<true>>(func);
             }
-#if (_MSC_VER >= 1920) && (OCIO_USE_AVX)
+#if (_MSC_VER >= 1920) && (OCIO_USE_AVX) && !defined(__clang__)
             // MSVC 2019+ has built-in _mm_pow_ps() SVML intrinsic
             // implementation accessible through immintrin.h. Therefore precise
             // SIMD version is available only when compiled with MSVC and AVX
-            // support.
+            // support. Clang on Windows doesn't have SVML intrinsics.
             return std::make_shared<Renderer_LIN_TO_PQ_SSE<false>>(func);
 #endif
 #endif // OCIO_USE_SSE2
@@ -2290,11 +2291,11 @@ ConstOpCPURcPtr GetFixedFunctionCPURenderer(ConstFixedFunctionOpDataRcPtr & func
             {
                 return std::make_shared<Renderer_PQ_TO_LIN_SSE<true>>(func);
             }
-#if (_MSC_VER >= 1920) && (OCIO_USE_AVX)
+#if (_MSC_VER >= 1920) && (OCIO_USE_AVX) && !defined(__clang__)
             // MSVC 2019+ has built-in _mm_pow_ps() SVML intrinsic
             // implementation accessible through immintrin.h. Therefore precise
             // SIMD version is available only when compiled with MSVC and AVX
-            // support.
+            // support. Clang on Windows doesn't have SVML intrinsics.
             return std::make_shared<Renderer_PQ_TO_LIN_SSE<false>>(func);
 #endif  
 #endif // OCIO_USE_SSE2
