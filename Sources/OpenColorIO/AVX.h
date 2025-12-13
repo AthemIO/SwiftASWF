@@ -8,6 +8,15 @@
 #include "CPUInfo.h"
 #if OCIO_USE_AVX
 
+// Enable AVX instruction generation for all functions in this header.
+// This is needed because Swift Package Manager doesn't support per-file compiler flags.
+#if defined(__clang__)
+#pragma clang attribute push(__attribute__((target("avx"))), apply_to=function)
+#elif defined(__GNUC__)
+#pragma GCC push_options
+#pragma GCC target("avx")
+#endif
+
 #include <immintrin.h>
 
 #include <OpenColorIO/OpenColorIO.h>
@@ -332,6 +341,12 @@ struct AVXRGBAPack<BIT_DEPTH_F32>
 };
 
 } // namespace OCIO_NAMESPACE
+
+#if defined(__clang__)
+#pragma clang attribute pop
+#elif defined(__GNUC__)
+#pragma GCC pop_options
+#endif
 
 #endif // OCIO_USE_AVX
 #endif // INCLUDED_OCIO_AVX_H

@@ -4,6 +4,15 @@
 #include "Lut1DOpCPU_AVX2.h"
 #if OCIO_USE_AVX2
 
+// Enable AVX2 instruction generation for all functions in this file.
+// This is needed because Swift Package Manager doesn't support per-file compiler flags.
+#if defined(__clang__)
+#pragma clang attribute push(__attribute__((target("avx,avx2,fma,f16c"))), apply_to=function)
+#elif defined(__GNUC__)
+#pragma GCC push_options
+#pragma GCC target("avx,avx2,fma,f16c")
+#endif
+
 #include <immintrin.h>
 #include <string.h>
 
@@ -173,5 +182,11 @@ Lut1DOpCPUApplyFunc * AVX2GetLut1DApplyFunc(BitDepth inBD, BitDepth outBD)
 }
 
 } // OCIO_NAMESPACE
+
+#if defined(__clang__)
+#pragma clang attribute pop
+#elif defined(__GNUC__)
+#pragma GCC pop_options
+#endif
 
 #endif // OCIO_USE_AVX2
