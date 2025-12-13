@@ -6,11 +6,12 @@
 
 // Enable AVX instruction generation for all functions in this file.
 // This is needed because Swift Package Manager doesn't support per-file compiler flags.
+// f16c is needed for half-float conversions (_mm256_cvtps_ph, _mm256_cvtph_ps)
 #if defined(__clang__)
-#pragma clang attribute push(__attribute__((target("avx"))), apply_to=function)
+#pragma clang attribute push(__attribute__((target("avx,f16c"))), apply_to=function)
 #elif defined(__GNUC__)
 #pragma GCC push_options
-#pragma GCC target("avx")
+#pragma GCC target("avx,f16c")
 #endif
 
 #include <immintrin.h>
