@@ -9,6 +9,7 @@
 #else // defined(_WIN32)
 
 #include <windows.h>
+#include <sstream>
 
 #include <Logging.h>
 
@@ -24,7 +25,8 @@ static constexpr char ErrorMsg[] { "Problem obtaining monitor profile informatio
 
 // List all active display paths using QueryDisplayConfig and GetDisplayConfigBufferSizes.
 // Get the data from each path using DisplayConfigGetDeviceInfo.
-void getAllMonitorsWithQueryDisplayConfig(std::vector<std::tstring> & monitorsName)
+// Note: Uses std::wstring since Windows display APIs always return wide strings
+void getAllMonitorsWithQueryDisplayConfig(std::vector<std::wstring> & monitorsName)
 {
     // https://learn.microsoft.com/en-us/windows/win32/api/wingdi/ns-wingdi-displayconfig_path_info
     std::vector<DISPLAYCONFIG_PATH_INFO> paths;
@@ -100,28 +102,30 @@ void SystemMonitorsImpl::getAllMonitors()
 {
     m_monitors.clear();
 
-    std::vector<std::tstring> friendlyMonitorNames;
+    // Use wstring for friendly names since Windows APIs return wide strings
+    std::vector<std::wstring> friendlyMonitorNames;
     getAllMonitorsWithQueryDisplayConfig(friendlyMonitorNames);
 
     // Initialize the structure.
-    DISPLAY_DEVICE dispDevice;
+    DISPLAY_DEVICEW dispDevice;
     ZeroMemory(&dispDevice, sizeof(dispDevice));
     dispDevice.cb = sizeof(dispDevice);
 
     // Iterate over all the monitors.
     DWORD dispNum = 0;
     // After the first call to EnumDisplayDevices, dispDevice.DeviceString is the adapter name.
-    while (EnumDisplayDevices(nullptr, dispNum, &dispDevice, 0))
+    // Use wide string version explicitly for consistent Unicode handling
+    while (EnumDisplayDevicesW(nullptr, dispNum, &dispDevice, 0))
     {
-        const std::tstring deviceName = dispDevice.DeviceName;
+        const std::wstring deviceName = dispDevice.DeviceName;
 
-        // Only select active monitors. 
-        // NOTE: Currently the two DISPLAY enums are equivalent, but we check both in case one may 
+        // Only select active monitors.
+        // NOTE: Currently the two DISPLAY enums are equivalent, but we check both in case one may
         // change in the future.
         if ((dispDevice.StateFlags & DISPLAY_DEVICE_ACTIVE)
             && (dispDevice.StateFlags & DISPLAY_DEVICE_ATTACHED_TO_DESKTOP))
         {
-            HDC hDC = CreateDC(nullptr, deviceName.c_str(), nullptr, nullptr);
+            HDC hDC = CreateDCW(nullptr, deviceName.c_str(), nullptr, nullptr);
             if (hDC)
             {
                 ZeroMemory(&dispDevice, sizeof(dispDevice));
@@ -130,9 +134,9 @@ void SystemMonitorsImpl::getAllMonitors()
                 // After second call, dispDevice.DeviceString is the monitor name for that device.
                 // Second parameters must be 0 to get the monitor name.
                 // See https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-enumdisplaydevicesw
-                EnumDisplayDevices(deviceName.c_str(), 0, &dispDevice, 0);   
+                EnumDisplayDevicesW(deviceName.c_str(), 0, &dispDevice, 0);
 
-                TCHAR icmPath[MAX_PATH + 1];
+                WCHAR icmPath[MAX_PATH + 1];
                 DWORD pathLength = MAX_PATH;
 
                 // TODO: Is a monitor without ICM profile possible?
@@ -144,44 +148,40 @@ void SystemMonitorsImpl::getAllMonitors()
 
                 // Check if the distNum index exists in friendlyMonitorNames vector and check if
                 // there is a corresponding friendly name.
-                const std::tstring extra = friendlyNameExists ? 
-                        friendlyMonitorNames.at(dispNum) : std::tstring(dispDevice.DeviceString);
+                const std::wstring extra = friendlyNameExists ?
+                        friendlyMonitorNames.at(dispNum) : std::wstring(dispDevice.DeviceString);
 
-                std::tstring strippedDeviceName = deviceName;
+                std::wstring strippedDeviceName = deviceName;
                 if(StringUtils::StartsWith(Platform::Utf16ToUtf8(deviceName), "\\\\.\\DISPLAY"))
                 {
                     // Remove the slashes.
-                    std::string prefix = "\\\\.\\";
+                    std::wstring prefix = L"\\\\.\\";
                     strippedDeviceName = deviceName.substr(prefix.length());
                 }
-                        
-                const std::tstring displayName = strippedDeviceName + TEXT(", ") + extra;
+
+                const std::wstring displayName = strippedDeviceName + L", " + extra;
 
                 // Get the associated ICM profile path.
-                if (GetICMProfile(hDC, &pathLength, icmPath))
+                if (GetICMProfileW(hDC, &pathLength, icmPath))
                 {
-#ifdef _UNICODE
                     m_monitors.push_back({Platform::Utf16ToUtf8(displayName), Platform::Utf16ToUtf8(icmPath)});
-#else
-                    m_monitors.push_back({displayName, icmPath});
-#endif
                 }
                 else
                 {
-                    std::tostringstream oss;
-                    oss << TEXT("Unable to access the ICM profile for the monitor '")
-                        << displayName << TEXT("'.");
+                    std::wostringstream oss;
+                    oss << L"Unable to access the ICM profile for the monitor '"
+                        << displayName << L"'.";
 
-                    LogDebugT(oss.str());
+                    LogDebug(Platform::Utf16ToUtf8(oss.str()));
                 }
 
                 DeleteDC(hDC);
             }
             else
             {
-                std::tostringstream oss;
-                oss << TEXT("Unable to access the monitor '") << deviceName << TEXT("'.");
-                LogDebugT(oss.str());
+                std::wostringstream oss;
+                oss << L"Unable to access the monitor '" << deviceName << L"'.";
+                LogDebug(Platform::Utf16ToUtf8(oss.str()));
             }
         }
 

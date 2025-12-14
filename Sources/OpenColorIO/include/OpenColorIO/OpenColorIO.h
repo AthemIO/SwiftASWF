@@ -2906,7 +2906,8 @@ private:
 ///////////////////////////////////////////////////////////////////////////
 // ImageDesc
 
-const ptrdiff_t AutoStride = std::numeric_limits<ptrdiff_t>::min();
+// Extra parentheses prevent Windows min/max macro expansion
+const ptrdiff_t AutoStride = (std::numeric_limits<ptrdiff_t>::min)();
 
 /**
  * \brief
