@@ -29,7 +29,9 @@
 #include <cstddef>
 
 #ifdef __has_include
-#if __has_include(<version>)
+// Skip <version> on Windows to avoid Swift C++ interop module issues
+// (std.version requires C++20 in Windows SDK modulemap)
+#if __has_include(<version>) && !defined(_WIN32)
 #include <version>
 #endif
 #endif
